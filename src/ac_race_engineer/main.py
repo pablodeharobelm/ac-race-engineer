@@ -1,4 +1,7 @@
 from ac_race_engineer.analysis.brake_analyzer import BrakeAnalyzer
+from ac_race_engineer.analysis.dynamics_analyzer import (
+    VehicleDynamicsAnalyzer,
+)
 from ac_race_engineer.analysis.session_analyzer import (
     SessionAnalyzer,
 )
@@ -230,7 +233,7 @@ def main():
             f"  Temperature change: "
             f"{brake.temperature_gain_c:+.1f} C"
         )
-        
+
     suspension_analyzer = SuspensionAnalyzer()
 
     suspension_report = suspension_analyzer.analyze(
@@ -287,6 +290,77 @@ def main():
             f"  Bottoming events: "
             f"{suspension.bottoming_event_count}"
         )
+
+    dynamics_analyzer = VehicleDynamicsAnalyzer()
+
+    dynamics_report = dynamics_analyzer.analyze(
+        output_file
+    )
+
+    print()
+    print("VEHICLE DYNAMICS")
+    print("================")
+
+    print(
+        f"Maximum lateral G: "
+        f"{dynamics_report.maximum_lateral_g:.2f}"
+    )
+
+    print(
+        f"Maximum acceleration G: "
+        f"{dynamics_report.maximum_acceleration_g:.2f}"
+    )
+
+    print(
+        f"Maximum braking G: "
+        f"{dynamics_report.maximum_braking_g:.2f}"
+    )
+
+    print()
+
+    print(
+        f"Front average slip: "
+        f"{dynamics_report.average_front_slip_angle_deg:.2f} deg"
+    )
+
+    print(
+        f"Rear average slip: "
+        f"{dynamics_report.average_rear_slip_angle_deg:.2f} deg"
+    )
+
+    print(
+        f"Front/rear delta: "
+        f"{dynamics_report.front_rear_slip_delta_deg:+.2f} deg"
+    )
+
+    print()
+
+    print(
+        f"Front-limited tendency: "
+        f"{dynamics_report.front_limited_percentage:.1f}%"
+    )
+
+    print(
+        f"Rear-limited tendency: "
+        f"{dynamics_report.rear_limited_percentage:.1f}%"
+    )
+
+    print(
+        f"Neutral: "
+        f"{dynamics_report.neutral_balance_percentage:.1f}%"
+    )
+
+    print()
+
+    print(
+        f"Front-limited events: "
+        f"{dynamics_report.front_limited_event_count}"
+    )
+
+    print(
+        f"Rear-limited events: "
+        f"{dynamics_report.rear_limited_event_count}"
+    )
 
 
 if __name__ == "__main__":

@@ -8,7 +8,9 @@ version = "0.1.0"
 description = "Telemetry, vehicle dynamics and AI race engineering platform for Assetto Corsa"
 requires-python = ">=3.11"
 
-dependencies = []
+dependencies = [
+    "pydantic>=2.0,<3.0"
+]
 
 [project.optional-dependencies]
 dev = [

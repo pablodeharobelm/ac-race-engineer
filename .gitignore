@@ -30,10 +30,13 @@ dist/
 
 # Data
 data/raw/
-data/processed/
+data/bronze/
+data/silver/
+data/gold/
 data/models/
 data/experiments/
 data/sweeps/
+data/analysis/
 
 # Logs
 *.log

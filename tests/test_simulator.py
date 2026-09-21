@@ -34,3 +34,96 @@ def test_simulator_advances_time():
 
     assert second.sample_index == 2
     assert second.elapsed_seconds > first.elapsed_seconds
+
+def test_tyre_temperature_changes_over_time():
+
+    simulator = SimulatorSource(
+        hz=20,
+        seed=42,
+    )
+
+    first_frame = simulator.read_frame()
+
+    initial_temperature = (
+        first_frame
+        .wheels["FL"]
+        .tyre_temp_core_c
+    )
+
+    final_frame = first_frame
+
+    for _ in range(600):
+        final_frame = (
+            simulator.read_frame()
+        )
+
+    final_temperature = (
+        final_frame
+        .wheels["FL"]
+        .tyre_temp_core_c
+    )
+
+    assert (
+        final_temperature
+        > initial_temperature
+    )
+
+
+def test_tyre_pressure_changes_with_temperature():
+
+    simulator = SimulatorSource(
+        hz=20,
+        seed=42,
+    )
+
+    first_frame = simulator.read_frame()
+
+    initial_pressure = (
+        first_frame
+        .wheels["FL"]
+        .pressure_psi
+    )
+
+    final_frame = first_frame
+
+    for _ in range(600):
+        final_frame = (
+            simulator.read_frame()
+        )
+
+    final_pressure = (
+        final_frame
+        .wheels["FL"]
+        .pressure_psi
+    )
+
+    assert (
+        final_pressure
+        != initial_pressure
+    )
+
+
+def test_simulator_can_be_deterministic():
+
+    simulator_a = SimulatorSource(
+        hz=20,
+        seed=42,
+    )
+
+    simulator_b = SimulatorSource(
+        hz=20,
+        seed=42,
+    )
+
+    frame_a = simulator_a.read_frame()
+    frame_b = simulator_b.read_frame()
+
+    assert (
+        frame_a.vehicle.speed_kmh
+        == frame_b.vehicle.speed_kmh
+    )
+
+    assert (
+        frame_a.wheels["FL"].load_n
+        == frame_b.wheels["FL"].load_n
+    )

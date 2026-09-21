@@ -1,6 +1,6 @@
-import math
 import random
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from ac_race_engineer.telemetry.models import (
@@ -12,11 +12,29 @@ from ac_race_engineer.telemetry.models import (
 from ac_race_engineer.telemetry.source import TelemetrySource
 
 
+@dataclass
+class _WheelState:
+    tyre_core_temp_c: float = 24.0
+    brake_temp_c: float = 80.0
+    cold_pressure_psi: float = 24.5
+
+
 class SimulatorSource(TelemetrySource):
 
-    def __init__(self, hz: int = 20):
+    def __init__(
+        self,
+        hz: int = 20,
+        seed: int | None = None,
+    ):
+        if hz <= 0:
+            raise ValueError(
+                "hz must be greater than 0"
+            )
+
         self.hz = hz
         self.delta_time = 1 / hz
+
+        self.random = random.Random(seed)
 
         self.elapsed_seconds = 0.0
         self.sample_index = 0
@@ -27,210 +45,506 @@ class SimulatorSource(TelemetrySource):
         self.track_id = "development_track"
 
         self.fuel_l = 40.0
+        self.speed_kmh = 80.0
+
+        self.air_temperature_c = 24.0
+        self.track_temperature_c = 33.0
+
+        self.wheel_states = {
+            position: _WheelState()
+            for position in (
+                "FL",
+                "FR",
+                "RL",
+                "RR",
+            )
+        }
 
     @property
     def source_name(self) -> str:
         return "simulator"
 
+    def _driver_inputs(
+        self,
+    ) -> tuple[float, float, float]:
+
+        phase = self.elapsed_seconds % 30
+
+        if phase < 6:
+            throttle = 0.95
+            brake = 0.0
+            steering = 2.0
+
+        elif phase < 8:
+            throttle = 0.0
+            brake = 0.85
+            steering = 5.0
+
+        elif phase < 14:
+            throttle = 0.45
+            brake = 0.0
+            steering = 18.0
+
+        elif phase < 19:
+            throttle = 0.90
+            brake = 0.0
+            steering = 3.0
+
+        elif phase < 21:
+            throttle = 0.0
+            brake = 1.0
+            steering = -4.0
+
+        elif phase < 27:
+            throttle = 0.35
+            brake = 0.0
+            steering = -22.0
+
+        else:
+            throttle = 1.0
+            brake = 0.0
+            steering = -3.0
+
+        steering += self.random.uniform(
+            -0.5,
+            0.5,
+        )
+
+        return (
+            throttle,
+            brake,
+            steering,
+        )
+
+    def _update_speed(
+        self,
+        throttle: float,
+        brake: float,
+    ) -> float:
+
+        speed_mps = (
+            self.speed_kmh
+            / 3.6
+        )
+
+        engine_acceleration = (
+            throttle
+            * 4.0
+        )
+
+        braking_deceleration = (
+            brake
+            * 10.5
+        )
+
+        aerodynamic_drag = (
+            speed_mps
+            * 0.015
+        )
+
+        acceleration = (
+            engine_acceleration
+            - braking_deceleration
+            - aerodynamic_drag
+        )
+
+        speed_mps += (
+            acceleration
+            * self.delta_time
+        )
+
+        speed_mps = max(
+            10.0,
+            min(
+                61.0,
+                speed_mps,
+            ),
+        )
+
+        self.speed_kmh = (
+            speed_mps
+            * 3.6
+        )
+
+        return acceleration
+
     def _generate_wheel(
         self,
         position: str,
-        speed_kmh: float,
         lateral_g: float,
+        throttle: float,
         brake: float,
     ) -> WheelTelemetry:
 
+        state = self.wheel_states[
+            position
+        ]
+
         is_front = position.startswith("F")
         is_left = position.endswith("L")
+        is_rear = not is_front
 
-        lateral_load_transfer = lateral_g * 700
+        lateral_transfer = (
+            lateral_g
+            * 700
+        )
 
         if is_left:
-            lateral_load_transfer *= -1
+            lateral_transfer *= -1
 
-        load_n = 3000 + lateral_load_transfer
+        load_n = (
+            3000
+            + lateral_transfer
+        )
 
         if is_front:
-            load_n += brake * 1000
+            load_n += (
+                brake
+                * 1100
+            )
         else:
-            load_n -= brake * 500
+            load_n -= (
+                brake
+                * 550
+            )
 
-        load_n = max(500, load_n)
-
-        core_temp = (
-            75
-            + abs(lateral_g) * 6
-            + brake * 3
-            + random.uniform(-1, 1)
+        load_n = max(
+            500,
+            load_n,
         )
 
-        camber_effect = 4 if is_front else 3
-
-        temp_inner = core_temp + camber_effect
-        temp_middle = core_temp
-        temp_outer = core_temp - camber_effect
-
-        pressure = (
-            26
-            + (core_temp - 75) * 0.025
-            + random.uniform(-0.1, 0.1)
+        slip_ratio = (
+            self.random.uniform(
+                0.005,
+                0.015,
+            )
         )
 
-        slip_ratio = random.uniform(0.01, 0.03)
+        if brake > 0.4:
+            slip_ratio += (
+                brake
+                * 0.05
+            )
 
-        if brake > 0.8:
-            slip_ratio += random.uniform(0.02, 0.08)
+        if (
+            is_rear
+            and throttle > 0.7
+        ):
+            slip_ratio += (
+                throttle
+                * 0.025
+            )
 
-        slip_angle_deg = (
+        base_slip_angle = (
             abs(lateral_g)
-            * random.uniform(2.5, 4.5)
+            * 3.0
         )
 
-        brake_temp_c = (
-            200
-            + brake * 400
-            + random.uniform(-10, 10)
+        if is_front:
+            slip_angle_deg = (
+                base_slip_angle
+                * 1.05
+            )
+        else:
+            slip_angle_deg = (
+                base_slip_angle
+                * (
+                    0.95
+                    + throttle * 0.10
+                )
+            )
+
+        slip_angle_deg += (
+            self.random.uniform(
+                -0.15,
+                0.15,
+            )
+        )
+
+        slip_angle_deg = max(
+            0.0,
+            slip_angle_deg,
+        )
+
+        tyre_heat = (
+            abs(lateral_g)
+            * 1.4
+            + slip_ratio * 12
+            + brake * 0.3
+        )
+
+        tyre_cooling = (
+            (
+                state.tyre_core_temp_c
+                - self.air_temperature_c
+            )
+            * 0.025
+            * (
+                0.4
+                + self.speed_kmh / 150
+            )
+        )
+
+        state.tyre_core_temp_c += (
+            tyre_heat
+            - tyre_cooling
+        ) * self.delta_time
+
+        brake_heat = (
+            brake
+            * (
+                self.speed_kmh
+                / 100
+            )
+            * 70
+        )
+
+        brake_cooling = (
+            (
+                state.brake_temp_c
+                - self.air_temperature_c
+            )
+            * 0.07
+            * (
+                0.5
+                + self.speed_kmh / 180
+            )
+        )
+
+        state.brake_temp_c += (
+            brake_heat
+            - brake_cooling
+        ) * self.delta_time
+
+        state.brake_temp_c = max(
+            self.air_temperature_c,
+            state.brake_temp_c,
+        )
+
+        camber_gradient = (
+            4.0
+            if is_front
+            else 3.0
+        )
+
+        temp_inner = (
+            state.tyre_core_temp_c
+            + camber_gradient
+        )
+
+        temp_middle = (
+            state.tyre_core_temp_c
+        )
+
+        temp_outer = (
+            state.tyre_core_temp_c
+            - camber_gradient
+        )
+
+        pressure_psi = (
+            state.cold_pressure_psi
+            + (
+                state.tyre_core_temp_c
+                - self.air_temperature_c
+            )
+            * 0.03
         )
 
         suspension_travel_mm = (
-            40
-            + load_n / 120
-            + random.uniform(-2, 2)
+            38
+            + load_n / 110
+            + self.random.uniform(
+                -2,
+                2,
+            )
         )
 
-        wheel_speed_kmh = speed_kmh * random.uniform(
-            0.997,
-            1.003,
+        if brake > 0.8 and is_front:
+            suspension_travel_mm += 5
+
+        wheel_speed_kmh = (
+            self.speed_kmh
         )
+
+        if brake > 0:
+            wheel_speed_kmh *= (
+                1
+                - slip_ratio
+            )
+
+        elif (
+            is_rear
+            and throttle > 0.7
+        ):
+            wheel_speed_kmh *= (
+                1
+                + slip_ratio
+            )
 
         return WheelTelemetry(
-            pressure_psi=pressure,
+            pressure_psi=pressure_psi,
             tyre_temp_inner_c=temp_inner,
             tyre_temp_middle_c=temp_middle,
             tyre_temp_outer_c=temp_outer,
-            tyre_temp_core_c=core_temp,
-            brake_temp_c=brake_temp_c,
-            wheel_speed_kmh=wheel_speed_kmh,
+            tyre_temp_core_c=(
+                state.tyre_core_temp_c
+            ),
+            brake_temp_c=(
+                state.brake_temp_c
+            ),
+            wheel_speed_kmh=(
+                wheel_speed_kmh
+            ),
             load_n=load_n,
             slip_ratio=slip_ratio,
-            slip_angle_deg=slip_angle_deg,
-            suspension_travel_mm=suspension_travel_mm,
+            slip_angle_deg=(
+                slip_angle_deg
+            ),
+            suspension_travel_mm=(
+                suspension_travel_mm
+            ),
         )
 
-    def read_frame(self) -> TelemetryFrame:
+    def read_frame(
+        self,
+    ) -> TelemetryFrame:
 
-        self.elapsed_seconds += self.delta_time
+        self.elapsed_seconds += (
+            self.delta_time
+        )
+
         self.sample_index += 1
 
-        phase = self.elapsed_seconds % 20
-
-        speed_kmh = (
-            130
-            + math.sin(self.elapsed_seconds * 0.4) * 70
+        throttle, brake, steering = (
+            self._driver_inputs()
         )
 
-        speed_kmh = max(40, speed_kmh)
-
-        throttle = (
-            0.6
-            + math.sin(self.elapsed_seconds * 0.5) * 0.4
-        )
-
-        throttle = max(
-            0.0,
-            min(1.0, throttle),
-        )
-
-        brake = 0.0
-
-        if 8 < phase < 10:
-            brake = min(
-                1.0,
-                phase - 8,
+        acceleration = (
+            self._update_speed(
+                throttle=throttle,
+                brake=brake,
             )
-
-            throttle *= 0.1
-
-        steering_angle_deg = (
-            math.sin(self.elapsed_seconds * 0.7)
-            * 25
         )
 
         lateral_g = (
-            steering_angle_deg
-            / 25
-            * speed_kmh
-            / 150
-            * 1.3
+            (
+                steering
+                / 25
+            )
+            * (
+                self.speed_kmh
+                / 150
+            )
+            * 1.35
         )
 
         longitudinal_g = (
-            throttle * 0.45
-            - brake * 1.3
+            acceleration
+            / 9.81
         )
-
-        rpm = int(
-            2500
-            + speed_kmh * 30
-        )
-
-        rpm = min(
-            rpm,
-            7500,
-        )
-
-        gear = int(speed_kmh / 35)
 
         gear = max(
             1,
-            min(6, gear),
+            min(
+                6,
+                int(
+                    self.speed_kmh
+                    / 35
+                )
+                + 1,
+            ),
+        )
+
+        rpm = int(
+            1800
+            + (
+                self.speed_kmh
+                / gear
+            )
+            * 115
+        )
+
+        rpm = max(
+            1500,
+            min(
+                7500,
+                rpm,
+            ),
         )
 
         self.fuel_l -= (
             throttle
             * self.delta_time
-            * 0.003
+            * 0.004
+        )
+
+        self.fuel_l = max(
+            0.0,
+            self.fuel_l,
         )
 
         vehicle = VehicleTelemetry(
-            speed_kmh=speed_kmh,
+            speed_kmh=self.speed_kmh,
             rpm=rpm,
             gear=gear,
             throttle=throttle,
             brake=brake,
             clutch=0.0,
-            steering_angle_deg=steering_angle_deg,
+            steering_angle_deg=steering,
             lateral_g=lateral_g,
             longitudinal_g=longitudinal_g,
             fuel_l=self.fuel_l,
             brake_bias=0.64,
-            pitch_deg=-longitudinal_g * 1.4,
-            roll_deg=lateral_g * 1.7,
-            ride_height_front_mm=70 - brake * 5,
-            ride_height_rear_mm=75 + brake * 3,
+            pitch_deg=(
+                -longitudinal_g
+                * 1.5
+            ),
+            roll_deg=(
+                lateral_g
+                * 1.8
+            ),
+            ride_height_front_mm=(
+                70
+                - brake * 6
+            ),
+            ride_height_rear_mm=(
+                75
+                + brake * 3
+            ),
         )
 
         environment = EnvironmentTelemetry(
-            air_temperature_c=24.0,
-            track_temperature_c=33.0,
+            air_temperature_c=(
+                self.air_temperature_c
+            ),
+            track_temperature_c=(
+                self.track_temperature_c
+            ),
             grip_level=0.97,
         )
 
         wheels = {
             position: self._generate_wheel(
                 position=position,
-                speed_kmh=speed_kmh,
                 lateral_g=lateral_g,
+                throttle=throttle,
                 brake=brake,
             )
-            for position in ["FL", "FR", "RL", "RR"]
+            for position in (
+                "FL",
+                "FR",
+                "RL",
+                "RR",
+            )
         }
 
         return TelemetryFrame(
             timestamp=datetime.now(UTC),
             session_id=self.session_id,
             sample_index=self.sample_index,
-            elapsed_seconds=self.elapsed_seconds,
+            elapsed_seconds=(
+                self.elapsed_seconds
+            ),
             car_id=self.car_id,
             track_id=self.track_id,
             vehicle=vehicle,

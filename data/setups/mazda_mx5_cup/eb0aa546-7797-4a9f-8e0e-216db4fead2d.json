@@ -1,0 +1,13 @@
+{
+  "setup_id": "eb0aa546-7797-4a9f-8e0e-216db4fead2d",
+  "car_id": "mazda_mx5_cup",
+  "name": "Development baseline",
+  "created_at": "2026-09-21T17:06:21.843934Z",
+  "values": {
+    "front_pressure": 24.5,
+    "rear_pressure": 24.5,
+    "front_camber": -2.5,
+    "rear_camber": -2.0,
+    "brake_bias": 0.64
+  }
+}

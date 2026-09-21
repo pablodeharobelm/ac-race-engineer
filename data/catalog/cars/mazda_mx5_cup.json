@@ -1,0 +1,52 @@
+{
+  "car_id": "mazda_mx5_cup",
+  "manufacturer": "Mazda",
+  "model": "MX-5 Cup",
+  "drivetrain": "RWD",
+  "engine_layout": "front",
+  "mass_kg": 1000,
+  "max_rpm": 7500,
+  "fuel_capacity_l": 45,
+  "setup_parameters": {
+    "front_pressure": {
+      "key": "front_pressure",
+      "display_name": "Front tyre pressure",
+      "unit": "psi",
+      "minimum": 20,
+      "maximum": 35,
+      "step": 0.1
+    },
+    "rear_pressure": {
+      "key": "rear_pressure",
+      "display_name": "Rear tyre pressure",
+      "unit": "psi",
+      "minimum": 20,
+      "maximum": 35,
+      "step": 0.1
+    },
+    "front_camber": {
+      "key": "front_camber",
+      "display_name": "Front camber",
+      "unit": "deg",
+      "minimum": -5,
+      "maximum": 0,
+      "step": 0.1
+    },
+    "rear_camber": {
+      "key": "rear_camber",
+      "display_name": "Rear camber",
+      "unit": "deg",
+      "minimum": -5,
+      "maximum": 0,
+      "step": 0.1
+    },
+    "brake_bias": {
+      "key": "brake_bias",
+      "display_name": "Brake bias",
+      "unit": "ratio",
+      "minimum": 0.5,
+      "maximum": 0.75,
+      "step": 0.01
+    }
+  }
+}

@@ -1,6 +1,7 @@
 from ac_race_engineer.analysis.session_analyzer import (
     SessionAnalyzer,
 )
+from ac_race_engineer.analysis.tyre_analyzer import TyreAnalyzer
 from ac_race_engineer.storage.recorder import (
     SessionRecorder,
 )
@@ -112,6 +113,50 @@ def main():
         print(
             f"  Max suspension travel: "
             f"{wheel.maximum_suspension_travel_mm:.1f} mm"
+        )
+
+    tyre_analyzer = TyreAnalyzer()
+
+    tyre_report = tyre_analyzer.analyze(
+        output_file
+    )
+
+    print()
+    print("TYRE ENGINEERING")
+    print("================")
+
+    for position, tyre in tyre_report.wheels.items():
+
+        print()
+        print(position)
+
+        print(
+            f"  Pressure: "
+            f"{tyre.starting_pressure_psi:.2f}"
+            f" -> "
+            f"{tyre.ending_pressure_psi:.2f} PSI"
+        )
+
+        print(
+            f"  Pressure gain: "
+            f"{tyre.pressure_gain_psi:+.2f} PSI"
+        )
+
+        print(
+            f"  Temperatures I/M/O: "
+            f"{tyre.average_inner_temp_c:.1f} / "
+            f"{tyre.average_middle_temp_c:.1f} / "
+            f"{tyre.average_outer_temp_c:.1f} C"
+        )
+
+        print(
+            f"  Inner/outer delta: "
+            f"{tyre.inner_outer_delta_c:+.1f} C"
+        )
+
+        print(
+            f"  Peak core temp: "
+            f"{tyre.peak_core_temp_c:.1f} C"
         )
 
 

@@ -33,6 +33,7 @@ data/raw/
 data/processed/
 data/models/
 data/experiments/
+data/sweeps/
 
 # Logs
 *.log

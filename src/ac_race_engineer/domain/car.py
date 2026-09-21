@@ -61,4 +61,6 @@ class CarDefinition(BaseModel):
     setup_parameters: dict[
         str,
         SetupParameterDefinition,
-    ] = {}
+    ] = Field(
+        default_factory=dict
+    )

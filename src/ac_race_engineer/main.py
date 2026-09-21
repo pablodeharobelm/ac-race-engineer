@@ -9,6 +9,9 @@ from ac_race_engineer.analysis.suspension_analyzer import (
     SuspensionAnalyzer,
 )
 from ac_race_engineer.analysis.tyre_analyzer import TyreAnalyzer
+from ac_race_engineer.domain.session import (
+    SessionType,
+)
 from ac_race_engineer.storage.recorder import (
     SessionRecorder,
 )
@@ -36,8 +39,9 @@ def main():
     )
 
     output_file = recorder.record_samples(
-        sample_count=sample_count,
-    )
+    sample_count=sample_count,
+    session_type=SessionType.TEST,
+)
 
     analyzer = SessionAnalyzer()
 

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from ac_race_engineer.domain.setup import SetupComparison
@@ -45,3 +47,18 @@ class ExperimentComparison(BaseModel):
     suspension: dict[str, SuspensionExperimentDelta]
 
     dynamics: DynamicsExperimentDelta
+
+
+class ExperimentRunResult(BaseModel):
+    experiment_id: str
+
+    created_at: datetime
+
+    seed: int
+    hz: int
+    sample_count: int
+
+    baseline_setup_id: str
+    candidate_setup_id: str
+
+    comparison: ExperimentComparison

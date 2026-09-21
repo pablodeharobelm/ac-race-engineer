@@ -32,6 +32,7 @@ dist/
 data/raw/
 data/processed/
 data/models/
+data/experiments/
 
 # Logs
 *.log
@@ -40,3 +41,4 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+

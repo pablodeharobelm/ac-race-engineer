@@ -2,6 +2,9 @@ from ac_race_engineer.analysis.brake_analyzer import BrakeAnalyzer
 from ac_race_engineer.analysis.session_analyzer import (
     SessionAnalyzer,
 )
+from ac_race_engineer.analysis.suspension_analyzer import (
+    SuspensionAnalyzer,
+)
 from ac_race_engineer.analysis.tyre_analyzer import TyreAnalyzer
 from ac_race_engineer.storage.recorder import (
     SessionRecorder,
@@ -226,6 +229,63 @@ def main():
         print(
             f"  Temperature change: "
             f"{brake.temperature_gain_c:+.1f} C"
+        )
+        
+    suspension_analyzer = SuspensionAnalyzer()
+
+    suspension_report = suspension_analyzer.analyze(
+        output_file
+    )
+
+    print()
+    print("SUSPENSION ENGINEERING")
+    print("======================")
+
+    print(
+        f"Front average travel: "
+        f"{suspension_report.average_front_travel_mm:.1f} mm"
+    )
+
+    print(
+        f"Rear average travel: "
+        f"{suspension_report.average_rear_travel_mm:.1f} mm"
+    )
+
+    print(
+        f"Front/rear delta: "
+        f"{suspension_report.front_rear_travel_delta_mm:+.1f} mm"
+    )
+
+    print(
+        f"Bottoming events: "
+        f"{suspension_report.total_bottoming_events}"
+    )
+
+    for position, suspension in (
+        suspension_report.wheels.items()
+    ):
+
+        print()
+        print(position)
+
+        print(
+            f"  Avg travel: "
+            f"{suspension.average_travel_mm:.1f} mm"
+        )
+
+        print(
+            f"  Max travel: "
+            f"{suspension.maximum_travel_mm:.1f} mm"
+        )
+
+        print(
+            f"  Avg load: "
+            f"{suspension.average_load_n:.0f} N"
+        )
+
+        print(
+            f"  Bottoming events: "
+            f"{suspension.bottoming_event_count}"
         )
 
 

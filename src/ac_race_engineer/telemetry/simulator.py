@@ -3,6 +3,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
+from ac_race_engineer.domain.setup import CarSetup
 from ac_race_engineer.telemetry.models import (
     EnvironmentTelemetry,
     TelemetryFrame,
@@ -25,6 +26,7 @@ class SimulatorSource(TelemetrySource):
         self,
         hz: int = 20,
         seed: int | None = None,
+        setup: CarSetup | None = None,
     ):
         if hz <= 0:
             raise ValueError(
@@ -44,6 +46,41 @@ class SimulatorSource(TelemetrySource):
         self.car_id = "mazda_mx5_cup"
         self.track_id = "development_track"
 
+        self.setup = setup
+
+        if (
+            setup is not None
+            and setup.car_id != self.car_id
+        ):
+            raise ValueError(
+                "Setup does not belong to simulator car"
+            )
+
+        self.front_pressure = self._setup_value(
+            "front_pressure",
+            24.5,
+        )
+
+        self.rear_pressure = self._setup_value(
+            "rear_pressure",
+            24.5,
+        )
+
+        self.front_camber = self._setup_value(
+            "front_camber",
+            -2.5,
+        )
+
+        self.rear_camber = self._setup_value(
+            "rear_camber",
+            -2.0,
+        )
+
+        self.brake_bias = self._setup_value(
+            "brake_bias",
+            0.64,
+        )
+
         self.fuel_l = 40.0
         self.speed_kmh = 80.0
 
@@ -51,13 +88,18 @@ class SimulatorSource(TelemetrySource):
         self.track_temperature_c = 33.0
 
         self.wheel_states = {
-            position: _WheelState()
-            for position in (
-                "FL",
-                "FR",
-                "RL",
-                "RR",
-            )
+            "FL": _WheelState(
+                cold_pressure_psi=self.front_pressure
+            ),
+            "FR": _WheelState(
+                cold_pressure_psi=self.front_pressure
+            ),
+            "RL": _WheelState(
+                cold_pressure_psi=self.rear_pressure
+            ),
+            "RR": _WheelState(
+                cold_pressure_psi=self.rear_pressure
+            ),
         }
 
     @property
@@ -240,10 +282,23 @@ class SimulatorSource(TelemetrySource):
             * 3.0
         )
 
+        ideal_pressure = 24.5
+
+        pressure_error = abs(
+            state.cold_pressure_psi
+            - ideal_pressure
+        )
+
+        pressure_slip_factor = (
+            1.0
+            + pressure_error * 0.02
+        )
+
         if is_front:
             slip_angle_deg = (
                 base_slip_angle
                 * 1.05
+                * pressure_slip_factor
             )
         else:
             slip_angle_deg = (
@@ -252,6 +307,7 @@ class SimulatorSource(TelemetrySource):
                     0.95
                     + throttle * 0.10
                 )
+                * pressure_slip_factor
             )
 
         slip_angle_deg += (
@@ -290,6 +346,16 @@ class SimulatorSource(TelemetrySource):
             - tyre_cooling
         ) * self.delta_time
 
+        if is_front:
+            axle_brake_share = (
+                self.brake_bias
+            )
+        else:
+            axle_brake_share = (
+                1.0
+                - self.brake_bias
+            )
+
         brake_heat = (
             brake
             * (
@@ -297,6 +363,10 @@ class SimulatorSource(TelemetrySource):
                 / 100
             )
             * 70
+            * (
+                axle_brake_share
+                / 0.5
+            )
         )
 
         brake_cooling = (
@@ -321,10 +391,15 @@ class SimulatorSource(TelemetrySource):
             state.brake_temp_c,
         )
 
-        camber_gradient = (
-            4.0
+        camber_deg = (
+            self.front_camber
             if is_front
-            else 3.0
+            else self.rear_camber 
+        )
+
+        camber_gradient = (
+            abs(camber_deg)
+            * 1.6
         )
 
         temp_inner = (
@@ -494,7 +569,7 @@ class SimulatorSource(TelemetrySource):
             lateral_g=lateral_g,
             longitudinal_g=longitudinal_g,
             fuel_l=self.fuel_l,
-            brake_bias=0.64,
+            brake_bias=self.brake_bias,
             pitch_deg=(
                 -longitudinal_g
                 * 1.5
@@ -550,4 +625,17 @@ class SimulatorSource(TelemetrySource):
             vehicle=vehicle,
             environment=environment,
             wheels=wheels,
+        )
+    def _setup_value(
+        self,
+        parameter: str,
+        default: float,
+    ) -> float:
+
+        if self.setup is None:
+            return default
+
+        return self.setup.values.get(
+            parameter,
+            default,
         )

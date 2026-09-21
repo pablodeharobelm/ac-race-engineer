@@ -13,11 +13,12 @@ from ac_race_engineer.telemetry.simulator import (
 def create_session(
     tmp_path,
     seed: int,
+    setup: CarSetup,
 ):
-
     simulator = SimulatorSource(
         hz=20,
         seed=seed,
+        setup=setup,
     )
 
     recorder = SessionRecorder(
@@ -27,13 +28,13 @@ def create_session(
 
     return recorder.record_samples(
         sample_count=600,
+        setup_id=setup.setup_id,
     )
 
 
 def test_compare_two_experiments(
     tmp_path,
 ):
-
     baseline_setup = CarSetup(
         car_id="mazda_mx5_cup",
         name="Baseline",
@@ -55,11 +56,13 @@ def test_compare_two_experiments(
     baseline_session = create_session(
         tmp_path / "baseline",
         seed=42,
+        setup=baseline_setup,
     )
 
     candidate_session = create_session(
         tmp_path / "candidate",
-        seed=43,
+        seed=42,
+        setup=candidate_setup,
     )
 
     service = ExperimentService()
@@ -71,15 +74,9 @@ def test_compare_two_experiments(
         candidate_session=candidate_session,
     )
 
-    assert (
-        comparison.car_id
-        == "mazda_mx5_cup"
-    )
+    assert comparison.car_id == "mazda_mx5_cup"
 
-    assert (
-        comparison.track_id
-        == "development_track"
-    )
+    assert comparison.track_id == "development_track"
 
     assert len(
         comparison.setup_changes.changes
@@ -96,11 +93,19 @@ def test_compare_two_experiments(
         > 0
     )
 
+    front_pressure_delta = (
+        comparison
+        .tyres["FL"]
+        .pressure_psi
+        .delta
+    )
+
+    assert front_pressure_delta > 0
+
 
 def test_setup_change_delta(
     tmp_path,
 ):
-
     baseline_setup = CarSetup(
         car_id="mazda_mx5_cup",
         name="Baseline",
@@ -120,11 +125,13 @@ def test_setup_change_delta(
     baseline_session = create_session(
         tmp_path / "baseline",
         seed=42,
+        setup=baseline_setup,
     )
 
     candidate_session = create_session(
         tmp_path / "candidate",
-        seed=43,
+        seed=42,
+        setup=candidate_setup,
     )
 
     service = ExperimentService()

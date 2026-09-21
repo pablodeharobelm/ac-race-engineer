@@ -1,3 +1,4 @@
+from ac_race_engineer.analysis.brake_analyzer import BrakeAnalyzer
 from ac_race_engineer.analysis.session_analyzer import (
     SessionAnalyzer,
 )
@@ -157,6 +158,74 @@ def main():
         print(
             f"  Peak core temp: "
             f"{tyre.peak_core_temp_c:.1f} C"
+        )
+
+    brake_analyzer = BrakeAnalyzer()
+
+    brake_report = brake_analyzer.analyze(
+        output_file
+    )
+
+    print()
+    print("BRAKE ENGINEERING")
+    print("=================")
+
+    print(
+        f"Braking events: "
+        f"{brake_report.braking_event_count}"
+    )
+
+    print(
+        f"Maximum brake input: "
+        f"{brake_report.maximum_brake_input:.2f}"
+    )
+
+    print(
+        f"Average brake input: "
+        f"{brake_report.average_brake_input_during_events:.2f}"
+    )
+
+    print(
+        f"Average event duration: "
+        f"{brake_report.average_braking_event_duration_seconds:.2f} s"
+    )
+
+    print()
+
+    print(
+        f"Front brake temperature: "
+        f"{brake_report.average_front_temperature_c:.1f} C"
+    )
+
+    print(
+        f"Rear brake temperature: "
+        f"{brake_report.average_rear_temperature_c:.1f} C"
+    )
+
+    print(
+        f"Front/rear delta: "
+        f"{brake_report.front_rear_temperature_delta_c:+.1f} C"
+    )
+
+    for position, brake in brake_report.wheels.items():
+
+        print()
+
+        print(position)
+
+        print(
+            f"  Avg temperature: "
+            f"{brake.average_temperature_c:.1f} C"
+        )
+
+        print(
+            f"  Peak temperature: "
+            f"{brake.peak_temperature_c:.1f} C"
+        )
+
+        print(
+            f"  Temperature change: "
+            f"{brake.temperature_gain_c:+.1f} C"
         )
 
 

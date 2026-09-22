@@ -40,3 +40,25 @@ class MLTrainingResult(BaseModel):
 
     model_file: str
     report_file: str
+
+class MLPredictionResult(BaseModel):
+    target: str
+
+    features: dict[str, float]
+
+    prediction: float
+
+
+class MLModelEvaluationResult(BaseModel):
+    model_file: str
+    dataset_file: str
+
+    test_rows: int
+    test_seeds: list[int]
+
+    mae: float
+    rmse: float
+    r2: float
+
+    actual_vs_predicted_plot: str
+    residual_plot: str

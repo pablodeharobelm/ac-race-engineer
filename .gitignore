@@ -37,6 +37,7 @@ data/models/
 data/experiments/
 data/sweeps/
 data/analysis/
+data/ml/
 
 # Logs
 *.log

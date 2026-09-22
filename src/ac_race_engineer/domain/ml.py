@@ -17,3 +17,26 @@ class MLDatasetBuildResult(BaseModel):
 
     csv_file: str
     parquet_file: str
+
+class MLTrainingResult(BaseModel):
+    model_id: str
+    created_at: datetime
+
+    target: str
+    features: list[str]
+
+    train_rows: int
+    test_rows: int
+
+    train_seeds: list[int]
+    test_seeds: list[int]
+
+    mae: float
+    rmse: float
+    r2: float
+
+    coefficient: float
+    intercept: float
+
+    model_file: str
+    report_file: str

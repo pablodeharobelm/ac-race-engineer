@@ -13,7 +13,9 @@ dependencies = [
     "pyarrow>=15.0",
     "tzdata>=2025.2",
     "pandas>=2.2,<3.0",
-    "matplotlib>=3.9,<4.0"
+    "matplotlib>=3.9,<4.0",
+    "scikit-learn>=1.9,<2.0",
+    "joblib>=1.4"
 ]
 
 [project.optional-dependencies]

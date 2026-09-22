@@ -62,3 +62,28 @@ class MLModelEvaluationResult(BaseModel):
 
     actual_vs_predicted_plot: str
     residual_plot: str
+
+class MLModelMetrics(BaseModel):
+    model_name: str
+
+    mae: float
+    rmse: float
+    r2: float
+
+
+class MLModelComparisonResult(BaseModel):
+    comparison_id: str
+    created_at: datetime
+
+    target: str
+    features: list[str]
+
+    train_rows: int
+    test_rows: int
+
+    train_seeds: list[int]
+    test_seeds: list[int]
+
+    models: list[MLModelMetrics]
+
+    report_file: str

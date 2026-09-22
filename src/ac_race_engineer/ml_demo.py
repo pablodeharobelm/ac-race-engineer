@@ -3,6 +3,9 @@ from pathlib import Path
 from ac_race_engineer.ml.slip_model import (
     FrontSlipModelTrainer,
 )
+from ac_race_engineer.services.ml_experiment_tracker import (
+    MLExperimentTracker,
+)
 
 
 def main():
@@ -34,6 +37,17 @@ def main():
 
     result = trainer.train(
         latest_dataset
+    )
+    tracker = MLExperimentTracker()
+
+    run = tracker.log_training(
+        training=result,
+        dataset_file=latest_dataset,
+        model_name="linear_regression",
+        parameters={
+            "test_size": 0.2,
+            "random_state": 42,
+        },
     )
 
     print()
@@ -116,6 +130,13 @@ def main():
     print(
         f"Report: "
         f"{result.report_file}"
+    )
+
+    print()
+
+    print(
+        f"Tracked ML run: "
+        f"{run.run_id}"
     )
 
 

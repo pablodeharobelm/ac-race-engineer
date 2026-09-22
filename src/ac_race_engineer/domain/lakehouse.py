@@ -62,3 +62,14 @@ class GoldAggregationResult(BaseModel):
     partition_date: str
     car_id: str
     track_id: str
+
+class LakehousePipelineResult(BaseModel):
+    session_id: str
+
+    bronze: BronzeIngestionResult
+    silver: SilverProcessingResult
+    gold: GoldAggregationResult
+
+    status: Literal[
+        "completed",
+    ]

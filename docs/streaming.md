@@ -96,4 +96,4 @@ lotes, cuarentena de nulos, reinicio con checkpoint, eventos desordenados y
 demasiado tardíos, cierre de ventanas, consultas activas y publicación atómica.
 
 Referencia: [guía oficial Structured Streaming de Spark 4.2](https://spark.apache.org/docs/4.2.0/streaming/apis-on-dataframes-and-datasets.html).
-Siguiente fase: 6.11 Kafka (broker, tópicos y transporte de telemetría).
+Transporte Kafka: [fase 6.11](kafka.md).

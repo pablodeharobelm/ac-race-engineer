@@ -82,7 +82,7 @@ class SparkTelemetryStream:
         self.window = f"{window_seconds} seconds"
         self.max_files_per_trigger = max_files_per_trigger
         # Analyze the same stateless transform used by batch Silver, before starting queries.
-        self.quality_schema = SparkSilverTelemetryProcessor.transform(
+        self.quality_schema = self.transform(
             spark.createDataFrame([], schema)
         ).schema
         self.paths = {stage: self.output_directory / stage for stage in self.STAGES}
@@ -116,6 +116,10 @@ class SparkTelemetryStream:
         for path in self.paths.values():
             path.mkdir(parents=True, exist_ok=True)
 
+    def transform(self, dataframe: DataFrame) -> DataFrame:
+        """Stateless quality transformation; specialized sources may add contract checks."""
+        return SparkSilverTelemetryProcessor.transform(dataframe)
+
     def _read(self, path: Path, schema: StructType) -> DataFrame:
         return (
             self.spark.readStream.schema(schema)
@@ -125,7 +129,7 @@ class SparkTelemetryStream:
 
     def dataframe(self, stage: str) -> DataFrame:
         if stage == "quality":
-            return SparkSilverTelemetryProcessor.transform(
+            return self.transform(
                 self._read(self.input_directory, self.schema)
             )
         if stage == "silver":

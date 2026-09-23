@@ -61,4 +61,4 @@ con `model_dump_json()`; la demo los imprime para poder guardarlos.
 - 6.8 Spark Gold: implementado y validado.
 - 6.9 Spark Lakehouse Pipeline: implementado y validado.
 - 6.10 Structured Streaming: implementado y validado; [uso y semántica](streaming.md).
-- 6.11 Kafka: pendiente después de Structured Streaming.
+- 6.11 Kafka: implementado y validado con broker real; [uso y semántica](kafka.md).

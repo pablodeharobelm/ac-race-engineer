@@ -21,6 +21,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+kafka = ["confluent-kafka>=2.15,<3"]
 dev = [
     "pytest>=8.0",
     "ruff>=0.6"
@@ -31,6 +32,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["kafka_integration: requires an external Kafka broker and the Spark Kafka connector"]
 
 [tool.ruff]
 line-length = 100

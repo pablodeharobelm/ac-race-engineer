@@ -1,12 +1,15 @@
 import os
 import sys
 
+from pyspark import __version__ as pyspark_version
 from pyspark.sql import SparkSession
 
 
 def create_spark_session(
     app_name: str = "ac-race-engineer",
     master: str = "local[*]",
+    *,
+    enable_kafka: bool = False,
 ) -> SparkSession:
 
     python_executable = sys.executable
@@ -24,8 +27,17 @@ def create_spark_session(
         "127.0.0.1",
     )
 
+    builder = SparkSession.builder
+    if enable_kafka:
+        if SparkSession.getActiveSession() is not None:
+            raise RuntimeError("Kafka must be enabled before creating the first Spark session")
+        builder = builder.config(
+            "spark.jars.packages",
+            f"org.apache.spark:spark-sql-kafka-0-10_2.13:{pyspark_version}",
+        )
+
     spark = (
-        SparkSession.builder
+        builder
         .appName(
             app_name
         )

@@ -54,3 +54,6 @@ Thumbs.db
 # Streaming inputs, sinks and checkpoints
 data/stream_input/
 data/streaming/
+
+# Kafka streaming sinks and checkpoints
+data/kafka_stream/

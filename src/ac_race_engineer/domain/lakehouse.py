@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -175,3 +176,27 @@ class SparkGoldAggregationResult(BaseModel):
     track_id: str
 
     spark_version: str
+
+
+class SparkPipelineStageResult(BaseModel):
+    stage: Literal["bronze", "silver", "gold"]
+    status: Literal["written", "skipped", "failed"]
+    input_path: str
+    output_path: str | None = None
+    output_rows: int | None = None
+    started_at: datetime
+    completed_at: datetime
+    duration_seconds: float
+    error: str | None = None
+
+
+class SparkLakehousePipelineResult(BaseModel):
+    session_id: str | None
+    status: Literal["completed", "failed"]
+    bronze: BronzeIngestionResult | None = None
+    silver: SparkSilverProcessingResult | None = None
+    gold: SparkGoldAggregationResult | None = None
+    started_at: datetime
+    completed_at: datetime
+    duration_seconds: float
+    stages: list[SparkPipelineStageResult]

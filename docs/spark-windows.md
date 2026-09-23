@@ -33,3 +33,33 @@ Las columnas Gold siguen el contrato pandas, incluido `maximum_lateral_g`.
 El consumo de combustible usa el orden `(timestamp, sample_index)`.
 Los tests comparan el conjunto de columnas y todas las métricas numéricas.
 Los tiempos de procesamiento de pandas y Spark son independientes.
+
+## Fase 6.9: Spark Lakehouse Pipeline
+
+```powershell
+.\.venv\Scripts\python.exe -m ac_race_engineer.spark_pipeline_demo ruta\sesion.jsonl
+```
+
+`SparkLakehousePipeline(spark).run(raw_file)` reutiliza Bronze y encadena Spark
+Silver y Spark Gold. La sesión Spark pertenece al llamador; el pipeline no la
+cierra. Cada resultado incluye estados written/skipped, rutas de entrada y
+salida para lineage, filas de salida, tiempos UTC y duraciones por etapa.
+Los resultados originales de cada capa conservan checksums y manifests.
+
+En caso de fallo se lanza `SparkLakehousePipelineError`, con la excepción
+original en `__cause__` y el informe parcial en `error.result`. No se ejecutan
+etapas posteriores. Tras corregir la entrada se puede repetir `run`: las
+capas terminadas aplican su propia idempotencia. Bronze conserva su contrato
+actual: una sesión RAW ya ingerida se considera inmutable.
+
+Los tests incluyen ejecución real RAW a Gold, paridad pandas, repetición
+idempotente, lineage y errores en cada etapa. Los informes son serializables
+con `model_dump_json()`; la demo los imprime para poder guardarlos.
+
+## Siguiente paso del roadmap
+
+- 6.8 Spark Gold: implementado y validado.
+- 6.9 Spark Lakehouse Pipeline: implementado; comprobar la suite tras cambios.
+- 6.10 Structured Streaming: pendiente (microbatches, checkpoints, event time,
+  watermarks, ventanas y controles de calidad).
+- 6.11 Kafka: pendiente después de Structured Streaming.

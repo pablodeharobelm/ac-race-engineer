@@ -454,3 +454,15 @@ def test_gold_fuel_uses_timestamp_before_sample_index(spark):
     )
     row = SparkGoldSessionAggregator._build_summary(dataframe).first()
     assert row["fuel_used_l"] == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("timestamp_type", ["TIMESTAMP", "TIMESTAMP_NTZ"])
+def test_checksum_preserves_timestamp_microseconds(spark, timestamp_type):
+    checksum = SparkGoldSessionAggregator._calculate_checksum
+    first = spark.sql(
+        f"SELECT CAST('2026-09-23 12:00:00.000001' AS {timestamp_type}) AS timestamp"
+    )
+    second = spark.sql(
+        f"SELECT CAST('2026-09-23 12:00:00.000002' AS {timestamp_type}) AS timestamp"
+    )
+    assert checksum(first) != checksum(second)

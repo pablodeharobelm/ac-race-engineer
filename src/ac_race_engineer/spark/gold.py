@@ -610,7 +610,12 @@ class SparkGoldSessionAggregator:
                 F.xxhash64(
                     F.to_json(
                         F.struct(*columns),
-                        options={"ignoreNullFields": "false", "timeZone": "UTC"},
+                        options={
+                            "ignoreNullFields": "false",
+                            "timeZone": "UTC",
+                            "timestampFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX",
+                            "timestampNTZFormat": "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
+                        },
                     )
                 ).alias(
                     "_row_hash"

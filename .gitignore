@@ -39,6 +39,7 @@ data/sweeps/
 data/analysis/
 data/ml/
 data/ml_tracking/
+data/silver_spark/
 
 # Logs
 *.log

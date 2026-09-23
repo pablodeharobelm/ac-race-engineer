@@ -59,7 +59,6 @@ con `model_dump_json()`; la demo los imprime para poder guardarlos.
 ## Siguiente paso del roadmap
 
 - 6.8 Spark Gold: implementado y validado.
-- 6.9 Spark Lakehouse Pipeline: implementado; comprobar la suite tras cambios.
-- 6.10 Structured Streaming: pendiente (microbatches, checkpoints, event time,
-  watermarks, ventanas y controles de calidad).
+- 6.9 Spark Lakehouse Pipeline: implementado y validado.
+- 6.10 Structured Streaming: implementado y validado; [uso y semántica](streaming.md).
 - 6.11 Kafka: pendiente después de Structured Streaming.

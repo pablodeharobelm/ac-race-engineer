@@ -6,6 +6,7 @@ from typing import ClassVar
 
 from pyspark.sql import Column, DataFrame, SparkSession
 from pyspark.sql import functions as F
+from pyspark.sql.types import DoubleType, FloatType
 
 from ac_race_engineer.domain.lakehouse import (
     SparkSilverProcessingResult,
@@ -223,27 +224,7 @@ class SparkSilverTelemetryProcessor:
             - deduplicated_rows
         )
 
-        enriched = self._add_features(
-            deduplicated
-        )
-
-        enriched = self._add_quality_flags(
-            enriched
-        )
-
-        processed = (
-            enriched
-            .withColumn(
-                "silver_processed_at",
-                F.current_timestamp(),
-            )
-            .withColumn(
-                "silver_schema_version",
-                F.lit(
-                    self.SCHEMA_VERSION
-                ),
-            )
-        )
+        processed = self.transform(deduplicated)
 
         valid = processed.filter(
             F.col(
@@ -349,13 +330,25 @@ class SparkSilverTelemetryProcessor:
 
         return result
 
+    @classmethod
+    def transform(cls, dataframe: DataFrame) -> DataFrame:
+        """Shared stateless enrichment for batch and streaming Bronze DataFrames."""
+        cls._validate_columns(dataframe)
+        dataframe = dataframe.withColumn("timestamp", F.to_timestamp("timestamp"))
+        return (
+            cls._add_quality_flags(cls._add_features(dataframe))
+            .withColumn("silver_processed_at", F.current_timestamp())
+            .withColumn("silver_schema_version", F.lit(cls.SCHEMA_VERSION))
+        )
+
+    @classmethod
     def _validate_columns(
-        self,
+        cls,
         dataframe: DataFrame,
     ) -> None:
 
         missing = (
-            self.REQUIRED_COLUMNS
+            cls.REQUIRED_COLUMNS
             - set(
                 dataframe.columns
             )
@@ -650,9 +643,9 @@ class SparkSilverTelemetryProcessor:
     ) -> DataFrame:
 
         missing_conditions = [
-            F.col(
-                column
-            ).isNull()
+            (F.col(column).isNull() | F.isnan(column))
+            if isinstance(dataframe.schema[column].dataType, (DoubleType, FloatType))
+            else F.col(column).isNull()
             for column in cls.REQUIRED_COLUMNS
         ]
 
@@ -730,15 +723,15 @@ class SparkSilverTelemetryProcessor:
             )
             .withColumn(
                 "quality_invalid_controls",
-                invalid_controls,
+                F.coalesce(invalid_controls, F.lit(True)),
             )
             .withColumn(
                 "quality_invalid_grip",
-                invalid_grip,
+                F.coalesce(invalid_grip, F.lit(True)),
             )
             .withColumn(
                 "quality_invalid_physical",
-                invalid_physical,
+                F.coalesce(invalid_physical, F.lit(False)),
             )
         )
 

@@ -50,3 +50,7 @@ logs/
 .DS_Store
 Thumbs.db
 
+
+# Streaming inputs, sinks and checkpoints
+data/stream_input/
+data/streaming/

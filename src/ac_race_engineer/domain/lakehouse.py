@@ -153,3 +153,25 @@ class SilverParityReport(BaseModel):
 
     all_metrics_match: bool
     parity_passed: bool
+
+class SparkGoldAggregationResult(BaseModel):
+    session_id: str
+
+    source_rows: int
+    output_rows: int
+
+    output_path: str
+    manifest_file: str
+
+    source_checksum: str
+
+    status: Literal[
+        "written",
+        "skipped",
+    ]
+
+    partition_date: str
+    car_id: str
+    track_id: str
+
+    spark_version: str

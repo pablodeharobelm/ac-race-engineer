@@ -23,7 +23,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
     volumes:
-      - kafka-data:/tmp/kraft-combined-logs
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "127.0.0.1:9092"]
       interval: 10s

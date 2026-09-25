@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 from typing import ClassVar
 
 import matplotlib
@@ -266,3 +266,4 @@ class SweepEDA:
         )
 
         return output_file
+

@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from pydantic import BaseModel, Field
 
@@ -72,3 +72,4 @@ class TelemetryFrame(BaseModel):
     environment: EnvironmentTelemetry
 
     wheels: dict[str, WheelTelemetry]
+

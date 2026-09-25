@@ -1,4 +1,4 @@
-import uuid
+﻿import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -300,3 +300,4 @@ class FrontSlipModelTrainer:
             )
 
         return dataframe
+

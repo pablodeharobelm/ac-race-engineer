@@ -1,4 +1,4 @@
-import os
+﻿import os
 
 DEFAULT_DATABASE_URL = (
     "postgresql+psycopg://"
@@ -13,3 +13,4 @@ def get_database_url() -> str:
         "DATABASE_URL",
         DEFAULT_DATABASE_URL,
     )
+

@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.domain.lakehouse import (
     LakehousePipelineResult,
@@ -100,3 +100,4 @@ class LakehousePipeline:
             gold=gold_result,
             status="completed",
         )
+

@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.analysis.feature_engineering import (
     SweepFeatureEngineer,
@@ -76,3 +76,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

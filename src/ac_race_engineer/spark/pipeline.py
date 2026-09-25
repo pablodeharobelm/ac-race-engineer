@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+﻿from datetime import datetime, timezone
 from pathlib import Path
 from time import perf_counter
 
@@ -41,7 +41,7 @@ class SparkLakehousePipeline:
         self.gold = SparkGoldSessionAggregator(spark, gold_directory)
 
     def run(self, raw_file: str | Path) -> SparkLakehousePipelineResult:
-        started_at = datetime.now(UTC)
+        started_at = datetime.now(timezone.utc)
         started = perf_counter()
         stages = []
         results = {}
@@ -53,7 +53,7 @@ class SparkLakehousePipeline:
             ("silver", self.silver.process),
             ("gold", self.gold.aggregate),
         ):
-            stage_started_at = datetime.now(UTC)
+            stage_started_at = datetime.now(timezone.utc)
             stage_started = perf_counter()
             try:
                 result = process(source)
@@ -70,7 +70,7 @@ class SparkLakehousePipeline:
                         output_path=output,
                         output_rows=rows,
                         started_at=stage_started_at,
-                        completed_at=datetime.now(UTC),
+                        completed_at=datetime.now(timezone.utc),
                         duration_seconds=perf_counter() - stage_started,
                     )
                 )
@@ -83,7 +83,7 @@ class SparkLakehousePipeline:
                         status="failed",
                         input_path=source,
                         started_at=stage_started_at,
-                        completed_at=datetime.now(UTC),
+                        completed_at=datetime.now(timezone.utc),
                         duration_seconds=perf_counter() - stage_started,
                         error=f"{type(exc).__name__}: {exc}",
                     )
@@ -92,7 +92,7 @@ class SparkLakehousePipeline:
                     session_id=session_id,
                     status="failed",
                     started_at=started_at,
-                    completed_at=datetime.now(UTC),
+                    completed_at=datetime.now(timezone.utc),
                     duration_seconds=perf_counter() - started,
                     stages=stages,
                     **results,
@@ -103,8 +103,12 @@ class SparkLakehousePipeline:
             session_id=session_id,
             status="completed",
             started_at=started_at,
-            completed_at=datetime.now(UTC),
+            completed_at=datetime.now(timezone.utc),
             duration_seconds=perf_counter() - started,
             stages=stages,
             **results,
         )
+
+
+
+

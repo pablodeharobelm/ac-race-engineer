@@ -1,4 +1,4 @@
-from sqlalchemy import select
+﻿from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ac_race_engineer.database.models import SetupRecord
@@ -96,3 +96,4 @@ class SetupRepository:
         )
 
         self._session.flush()
+

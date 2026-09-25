@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+﻿from datetime import datetime, timezone
 from pathlib import Path
 
 import pyarrow as pa
@@ -159,9 +159,7 @@ class BronzeTelemetryIngestor:
 
         rows = []
 
-        ingested_at = datetime.now(
-            UTC
-        )
+        ingested_at = datetime.now(timezone.utc)
 
         with source_file.open(
             "r",
@@ -316,3 +314,5 @@ class BronzeTelemetryIngestor:
                 ] = value
 
         return row
+
+

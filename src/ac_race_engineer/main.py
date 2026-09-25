@@ -1,4 +1,4 @@
-from ac_race_engineer.analysis.brake_analyzer import BrakeAnalyzer
+﻿from ac_race_engineer.analysis.brake_analyzer import BrakeAnalyzer
 from ac_race_engineer.analysis.dynamics_analyzer import (
     VehicleDynamicsAnalyzer,
 )
@@ -369,3 +369,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

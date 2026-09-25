@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.domain.session import (
     SessionConditions,
@@ -213,3 +213,4 @@ class SessionRecorder:
                 "Telemetry source changed track "
                 "while recording"
             )
+

@@ -1,4 +1,4 @@
-"""File-backed Structured Streaming using the existing Bronze/Silver contract."""
+﻿"""File-backed Structured Streaming using the existing Bronze/Silver contract."""
 
 import hashlib
 import json
@@ -221,3 +221,5 @@ class SparkTelemetryStream:
             .parquet(str(self.paths["quality"]))
             .filter(~F.col("is_valid"))
         )
+
+

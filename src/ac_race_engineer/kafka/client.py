@@ -1,4 +1,4 @@
-"""Optional confluent-kafka clients. Importing the core project does not require Kafka."""
+﻿"""Optional confluent-kafka clients. Importing the core project does not require Kafka."""
 
 import re
 import time
@@ -139,3 +139,5 @@ def consume_telemetry(
             count += 1
     finally:
         consumer.close()
+
+

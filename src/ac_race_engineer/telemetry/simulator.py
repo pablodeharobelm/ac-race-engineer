@@ -1,4 +1,4 @@
-import random
+﻿import random
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -639,3 +639,4 @@ class SimulatorSource(TelemetrySource):
             parameter,
             default,
         )
+

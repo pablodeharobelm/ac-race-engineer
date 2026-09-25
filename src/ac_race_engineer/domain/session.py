@@ -1,7 +1,8 @@
-from datetime import datetime
-from enum import StrEnum
+﻿from datetime import datetime
 
 from pydantic import BaseModel, Field
+
+from ac_race_engineer.compat import StrEnum
 
 
 class SessionType(StrEnum):
@@ -46,3 +47,4 @@ class SessionMetadata(BaseModel):
 
     initial_conditions: SessionConditions
     final_conditions: SessionConditions
+

@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -62,3 +62,4 @@ class ExperimentRunResult(BaseModel):
     candidate_setup_id: str
 
     comparison: ExperimentComparison
+

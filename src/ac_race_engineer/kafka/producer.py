@@ -1,4 +1,4 @@
-import json
+﻿import json
 import socket
 from collections.abc import Mapping
 from datetime import date, datetime
@@ -110,3 +110,4 @@ class KafkaProducer:
             raise RuntimeError(
                 f"Kafka delivery failed: {error}"
             )
+

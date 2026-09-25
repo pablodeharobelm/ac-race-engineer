@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+﻿from datetime import UTC, datetime
 
 from ac_race_engineer.kafka.config import (
     get_telemetry_topic,
@@ -16,9 +16,7 @@ def main() -> None:
         key="python-demo-001",
         payload={
             "session_id": "python-demo-001",
-            "timestamp": datetime.now(
-                UTC
-            ),
+            "timestamp": datetime.now(UTC),
             "speed_kph": 126.8,
             "rpm": 6820,
             "gear": 4,
@@ -42,3 +40,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

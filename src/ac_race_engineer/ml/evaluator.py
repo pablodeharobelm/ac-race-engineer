@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import matplotlib
 
@@ -325,3 +325,4 @@ class FrontSlipModelEvaluator:
         plt.close(
             figure
         )
+

@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.analysis.sweep_eda import (
     SweepEDA,
@@ -119,3 +119,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

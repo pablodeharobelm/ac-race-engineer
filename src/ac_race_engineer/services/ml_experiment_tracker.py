@@ -1,4 +1,4 @@
-import platform
+﻿import platform
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -85,3 +85,4 @@ class MLExperimentTracker:
         )
 
         return run
+

@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+﻿from sqlalchemy.orm import Session
 
 from ac_race_engineer.database.models import (
     GoldSessionMetricsRecord,
@@ -64,3 +64,4 @@ class GoldSessionMetricsRepository:
         self._session.flush()
 
         return record
+

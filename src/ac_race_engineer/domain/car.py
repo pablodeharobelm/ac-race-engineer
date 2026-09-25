@@ -1,6 +1,6 @@
-from enum import StrEnum
+﻿from pydantic import BaseModel, Field, model_validator
 
-from pydantic import BaseModel, Field, model_validator
+from ac_race_engineer.compat import StrEnum
 
 
 class Drivetrain(StrEnum):
@@ -64,3 +64,4 @@ class CarDefinition(BaseModel):
     ] = Field(
         default_factory=dict
     )
+

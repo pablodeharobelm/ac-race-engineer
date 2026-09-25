@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.ml.model_comparison import (
     FrontSlipModelComparison,
@@ -89,3 +89,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

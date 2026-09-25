@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+﻿from abc import ABC, abstractmethod
 
 from ac_race_engineer.telemetry.models import TelemetryFrame
 
@@ -24,3 +24,4 @@ class TelemetrySource(ABC):
         Return the next available telemetry frame.
         """
         raise NotImplementedError
+

@@ -1,4 +1,4 @@
-from collections import deque
+﻿from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -326,3 +326,4 @@ class BrakeAnalyzer:
             raise ValueError(
                 "Session contains multiple tracks"
             )
+

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+﻿from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ac_race_engineer.database.models import ExperimentRecord
@@ -77,3 +77,4 @@ class ExperimentRepository:
         self._session.flush()
 
         return record
+

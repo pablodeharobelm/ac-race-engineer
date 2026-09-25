@@ -40,4 +40,4 @@ markers = ["kafka_integration: requires an external Kafka broker and the Spark K
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py310"

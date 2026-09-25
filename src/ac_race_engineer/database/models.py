@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from sqlalchemy import (
     JSON,
@@ -321,3 +321,4 @@ class GoldSessionMetricsRecord(Base):
         DateTime(timezone=True),
         server_default=func.now(),
     )
+

@@ -1,4 +1,4 @@
-from ac_race_engineer.domain.setup import CarSetup
+﻿from ac_race_engineer.domain.setup import CarSetup
 from ac_race_engineer.services.parameter_sweep import (
     ParameterSweepRunner,
 )
@@ -67,3 +67,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

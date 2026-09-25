@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.analysis.dynamics_models import (
     VehicleDynamicsReport,
@@ -345,3 +345,4 @@ class VehicleDynamicsAnalyzer:
             raise ValueError(
                 "Session contains multiple tracks"
             )
+

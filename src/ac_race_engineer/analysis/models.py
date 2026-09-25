@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 
 
 class WheelSessionSummary(BaseModel):
@@ -35,3 +35,4 @@ class SessionSummary(BaseModel):
     fuel_used_l: float
 
     wheels: dict[str, WheelSessionSummary]
+

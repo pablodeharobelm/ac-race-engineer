@@ -1,4 +1,4 @@
-from sqlalchemy import Engine, text
+﻿from sqlalchemy import Engine, text
 
 
 def check_database_connection(
@@ -32,3 +32,4 @@ def get_database_info(
         "user": str(row[1]),
         "version": str(row[2]),
     }
+

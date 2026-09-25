@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -91,3 +91,4 @@ class SessionRepository:
         self._session.flush()
 
         return record
+

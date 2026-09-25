@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 
 
 class BrakeWheelAnalysis(BaseModel):
@@ -29,3 +29,4 @@ class BrakeAnalysisReport(BaseModel):
     front_rear_temperature_delta_c: float
 
     wheels: dict[str, BrakeWheelAnalysis]
+

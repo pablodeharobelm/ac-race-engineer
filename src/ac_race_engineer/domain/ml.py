@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -87,3 +87,4 @@ class MLModelComparisonResult(BaseModel):
     models: list[MLModelMetrics]
 
     report_file: str
+

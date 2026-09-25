@@ -1,4 +1,4 @@
-from sqlalchemy import select
+﻿from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ac_race_engineer.database.models import MLRunRecord
@@ -79,3 +79,4 @@ class MLRunRepository:
         self._session.flush()
 
         return record
+

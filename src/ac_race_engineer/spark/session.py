@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 from pathlib import Path
 
@@ -104,3 +104,4 @@ def create_spark_session(
     )
 
     return spark
+

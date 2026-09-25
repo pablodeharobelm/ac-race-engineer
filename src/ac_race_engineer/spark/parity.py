@@ -1,4 +1,4 @@
-import math
+﻿import math
 from pathlib import Path
 
 import pandas as pd
@@ -364,3 +364,4 @@ class SilverParityValidator:
                 parity_passed
             ),
         )
+

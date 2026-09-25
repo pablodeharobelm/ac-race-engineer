@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.domain.setup import (
     CarSetup,
@@ -99,3 +99,4 @@ class SetupRepository:
             )
 
         return setups
+

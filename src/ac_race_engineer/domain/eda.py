@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 
 
 class SweepEDAReport(BaseModel):
@@ -16,3 +16,4 @@ class SweepEDAReport(BaseModel):
         str,
         float | None,
     ]
+

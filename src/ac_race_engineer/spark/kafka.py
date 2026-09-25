@@ -1,4 +1,4 @@
-"""Kafka -> durable Bronze audit -> the existing streaming Silver/analytics layers."""
+﻿"""Kafka -> durable Bronze audit -> the existing streaming Silver/analytics layers."""
 
 import json
 from pathlib import Path
@@ -255,3 +255,5 @@ class KafkaTelemetryStream:
             running.stop()
             raise
         return running
+
+

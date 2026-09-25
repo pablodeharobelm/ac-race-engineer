@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -200,3 +200,5 @@ class SparkLakehousePipelineResult(BaseModel):
     completed_at: datetime
     duration_seconds: float
     stages: list[SparkPipelineStageResult]
+
+

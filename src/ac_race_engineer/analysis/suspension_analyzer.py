@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+﻿from dataclasses import dataclass
 from pathlib import Path
 
 from ac_race_engineer.analysis.suspension_models import (
@@ -247,3 +247,4 @@ class SuspensionAnalyzer:
             raise ValueError(
                 "Session contains multiple tracks"
             )
+

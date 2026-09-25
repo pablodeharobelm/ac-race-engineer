@@ -1,4 +1,4 @@
-from ac_race_engineer.database.base import Base
+﻿from ac_race_engineer.database.base import Base
 from ac_race_engineer.database.models import (
     CarRecord,
     ExperimentRecord,
@@ -39,3 +39,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

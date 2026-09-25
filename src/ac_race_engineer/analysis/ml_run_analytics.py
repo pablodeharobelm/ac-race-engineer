@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 import matplotlib
 
@@ -276,3 +276,4 @@ class MLRunAnalytics:
         )
 
         return output_file
+

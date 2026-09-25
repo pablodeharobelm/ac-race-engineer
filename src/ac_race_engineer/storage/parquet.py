@@ -1,4 +1,4 @@
-import json
+﻿import json
 from pathlib import Path
 
 import pyarrow as pa
@@ -180,3 +180,4 @@ class ParquetExporter:
             )
 
         return row
+

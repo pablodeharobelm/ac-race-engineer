@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 
 
 class VehicleDynamicsReport(BaseModel):
@@ -27,3 +27,4 @@ class VehicleDynamicsReport(BaseModel):
 
     front_limited_event_count: int
     rear_limited_event_count: int
+

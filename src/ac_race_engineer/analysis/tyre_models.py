@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 
 
 class TyreWheelAnalysis(BaseModel):
@@ -30,3 +30,4 @@ class TyreAnalysisReport(BaseModel):
     sample_count: int
 
     wheels: dict[str, TyreWheelAnalysis]
+

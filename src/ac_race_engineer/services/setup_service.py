@@ -1,4 +1,4 @@
-from ac_race_engineer.domain.car import (
+﻿from ac_race_engineer.domain.car import (
     CarDefinition,
 )
 from ac_race_engineer.domain.setup import (
@@ -100,3 +100,4 @@ class SetupService:
             setup_b_id=setup_b.setup_id,
             changes=changes,
         )
+

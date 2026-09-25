@@ -1,4 +1,4 @@
-from ac_race_engineer.database.health import (
+﻿from ac_race_engineer.database.health import (
     check_database_connection,
     get_database_info,
 )
@@ -39,3 +39,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

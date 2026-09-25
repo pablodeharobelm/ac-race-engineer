@@ -1,4 +1,4 @@
-import hashlib
+﻿import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import ClassVar
@@ -859,3 +859,4 @@ class SilverTelemetryProcessor:
                 "status": "skipped"
             }
         )
+

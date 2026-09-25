@@ -1,4 +1,4 @@
-"""Publish immutable Bronze microbatch files from an existing telemetry source."""
+﻿"""Publish immutable Bronze microbatch files from an existing telemetry source."""
 
 import time
 from datetime import UTC, datetime
@@ -71,3 +71,5 @@ class TelemetryStreamPublisher:
         finally:
             temporary.unlink(missing_ok=True)
         return destination
+
+

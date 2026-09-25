@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 
 
 class SuspensionWheelAnalysis(BaseModel):
@@ -32,3 +32,4 @@ class SuspensionAnalysisReport(BaseModel):
     total_bottoming_events: int
 
     wheels: dict[str, SuspensionWheelAnalysis]
+

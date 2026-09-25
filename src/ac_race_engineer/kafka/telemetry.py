@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping
+﻿from collections.abc import Iterable, Mapping
 from dataclasses import asdict, is_dataclass
 from typing import Any
 
@@ -113,3 +113,4 @@ class KafkaTelemetryPublisher:
             )
 
         return count
+

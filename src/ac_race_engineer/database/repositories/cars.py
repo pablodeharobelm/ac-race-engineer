@@ -1,4 +1,4 @@
-from sqlalchemy import select
+﻿from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ac_race_engineer.database.models import CarRecord
@@ -89,3 +89,4 @@ class CarRepository:
         )
 
         self._session.flush()
+

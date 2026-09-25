@@ -1,4 +1,4 @@
-from ac_race_engineer.domain.setup import (
+﻿from ac_race_engineer.domain.setup import (
     CarSetup,
 )
 from ac_race_engineer.repositories.setup_repository import (
@@ -37,3 +37,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

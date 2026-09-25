@@ -1,4 +1,4 @@
-import os
+﻿import os
 
 DEFAULT_BOOTSTRAP_SERVERS = "localhost:9092"
 DEFAULT_TELEMETRY_TOPIC = "telemetry.raw"
@@ -16,3 +16,4 @@ def get_telemetry_topic() -> str:
         "KAFKA_TELEMETRY_TOPIC",
         DEFAULT_TELEMETRY_TOPIC,
     )
+

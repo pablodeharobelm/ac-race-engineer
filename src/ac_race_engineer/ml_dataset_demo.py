@@ -1,4 +1,4 @@
-import pandas as pd
+﻿import pandas as pd
 
 from ac_race_engineer.domain.setup import (
     CarSetup,
@@ -107,3 +107,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

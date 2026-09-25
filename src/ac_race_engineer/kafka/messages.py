@@ -1,4 +1,4 @@
-"""Versioned Kafka wire contract; payloads retain the existing telemetry models."""
+﻿"""Versioned Kafka wire contract; payloads retain the existing telemetry models."""
 
 from typing import Literal
 
@@ -24,3 +24,5 @@ class KafkaTelemetryMessage(BaseModel):
     def key(self) -> bytes:
         # All samples of one session use the same Kafka partition.
         return self.frame.session_id.encode("utf-8")
+
+

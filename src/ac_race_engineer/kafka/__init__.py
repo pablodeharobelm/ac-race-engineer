@@ -1,4 +1,4 @@
-from ac_race_engineer.kafka.producer import (
+﻿from ac_race_engineer.kafka.producer import (
     KafkaProducer,
     serialize_json,
 )
@@ -13,3 +13,4 @@ __all__ = [
     "frame_to_payload",
     "serialize_json",
 ]
+

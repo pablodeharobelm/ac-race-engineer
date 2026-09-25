@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -42,3 +42,4 @@ class ParameterSweepResult(BaseModel):
     sample_count: int
 
     points: list[SweepPoint]
+

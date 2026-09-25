@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+﻿from dataclasses import dataclass
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -232,3 +232,4 @@ class SessionAnalyzer:
             raise ValueError(
                 "Wheel configuration changed during session"
             )
+

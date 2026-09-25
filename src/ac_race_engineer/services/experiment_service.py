@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 from ac_race_engineer.analysis.brake_analyzer import (
     BrakeAnalyzer,
@@ -235,3 +235,4 @@ class ExperimentService:
             raise ValueError(
                 "Candidate setup does not match session car"
             )
+

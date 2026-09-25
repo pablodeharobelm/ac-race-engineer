@@ -1,4 +1,4 @@
-import hashlib
+﻿import hashlib
 from pathlib import Path
 from typing import ClassVar
 
@@ -733,3 +733,4 @@ class SparkGoldSessionAggregator:
                 "status": "skipped",
             }
         )
+

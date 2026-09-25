@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+﻿from collections.abc import Iterator
 from contextlib import contextmanager
 
 from sqlalchemy import Engine, create_engine
@@ -50,3 +50,4 @@ def database_session(
         raise
     finally:
         session.close()
+

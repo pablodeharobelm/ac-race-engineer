@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 
 
 class MLRunAnalyticsReport(BaseModel):
@@ -14,3 +14,4 @@ class MLRunAnalyticsReport(BaseModel):
     maximum_r2: float
 
     dataset_file_count: int
+

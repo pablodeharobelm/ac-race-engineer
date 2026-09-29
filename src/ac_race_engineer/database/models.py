@@ -2,11 +2,13 @@
 
 from sqlalchemy import (
     JSON,
+    Boolean,
     DateTime,
     Float,
     ForeignKey,
     Integer,
     String,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -318,6 +320,140 @@ class GoldSessionMetricsRecord(Base):
     )
 
     generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+class LapRecord(Base):
+    __tablename__ = "laps"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "session_id",
+            "lap_number",
+            name="uq_laps_session_lap_number",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    session_id: Mapped[str] = mapped_column(
+        ForeignKey(
+            "sessions.id",
+            ondelete="CASCADE",
+        ),
+        index=True,
+    )
+
+    lap_number: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    lap_time_ms: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    best_lap_time_ms: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    is_best: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
+    position: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    is_in_pit: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
+    is_in_pit_lane: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
+    occurred_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+
+class SectorRecord(Base):
+    __tablename__ = "sectors"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "session_id",
+            "lap_number",
+            "sector_number",
+            name=(
+                "uq_sectors_session_lap_sector"
+            ),
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    session_id: Mapped[str] = mapped_column(
+        ForeignKey(
+            "sessions.id",
+            ondelete="CASCADE",
+        ),
+        index=True,
+    )
+
+    lap_number: Mapped[int] = mapped_column(
+        Integer,
+        index=True,
+    )
+
+    sector_index: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    sector_number: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    sector_time_ms: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    position: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    is_in_pit: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
+    is_in_pit_lane: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+    )
+
+    occurred_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
     )

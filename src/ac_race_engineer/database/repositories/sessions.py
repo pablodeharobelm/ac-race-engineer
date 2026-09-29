@@ -3,11 +3,16 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ac_race_engineer.database.models import SessionRecord
+from ac_race_engineer.database.models import (
+    SessionRecord,
+)
 
 
 class SessionRepository:
-    def __init__(self, session: Session) -> None:
+    def __init__(
+        self,
+        session: Session,
+    ) -> None:
         self._session = session
 
     def get_by_id(
@@ -19,14 +24,42 @@ class SessionRepository:
             session_id,
         )
 
+    def get_latest(
+        self,
+        *,
+        source: str | None = None,
+    ) -> SessionRecord | None:
+        statement = select(
+            SessionRecord
+        )
+
+        if source is not None:
+            statement = statement.where(
+                SessionRecord.source
+                == source
+            )
+
+        statement = statement.order_by(
+            SessionRecord.created_at.desc(),
+        ).limit(
+            1
+        )
+
+        return self._session.scalar(
+            statement
+        )
+
     def list_for_car(
         self,
         car_id: int,
     ) -> list[SessionRecord]:
         statement = (
-            select(SessionRecord)
+            select(
+                SessionRecord
+            )
             .where(
-                SessionRecord.car_id == car_id
+                SessionRecord.car_id
+                == car_id
             )
             .order_by(
                 SessionRecord.created_at
@@ -34,7 +67,9 @@ class SessionRepository:
         )
 
         return list(
-            self._session.scalars(statement)
+            self._session.scalars(
+                statement
+            )
         )
 
     def save(
@@ -73,22 +108,35 @@ class SessionRepository:
                 silver_path=silver_path,
             )
 
-            self._session.add(record)
+            self._session.add(
+                record
+            )
 
         else:
             record.car_id = car_id
             record.track_id = track_id
             record.setup_id = setup_id
-            record.session_type = session_type
+            record.session_type = (
+                session_type
+            )
             record.source = source
-            record.started_at = started_at
-            record.ended_at = ended_at
-            record.conditions = conditions
+            record.started_at = (
+                started_at
+            )
+            record.ended_at = (
+                ended_at
+            )
+            record.conditions = (
+                conditions
+            )
             record.raw_path = raw_path
-            record.bronze_path = bronze_path
-            record.silver_path = silver_path
+            record.bronze_path = (
+                bronze_path
+            )
+            record.silver_path = (
+                silver_path
+            )
 
         self._session.flush()
 
         return record
-

@@ -429,6 +429,9 @@ class WindowsSharedMemoryBackend(
             surface_grip=float(
                 raw.surfaceGrip
             ),
+            normalized_car_position=float(
+                raw.normalizedCarPosition
+            ),
         )
 
     def read_static(
@@ -497,4 +500,3 @@ class WindowsSharedMemoryBackend(
         traceback: object,
     ) -> None:
         self.close()
-

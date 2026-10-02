@@ -32,6 +32,10 @@ from ac_race_engineer.telemetry.assetto_corsa.session_tracker import (
 from ac_race_engineer.telemetry.assetto_corsa.snapshots import (
     ACGraphicsSnapshot,
 )
+from ac_race_engineer.telemetry.assetto_corsa.trace_tracker import (
+    AssettoCorsaLapTraceTracker,
+    LapTrace,
+)
 from ac_race_engineer.telemetry.models import (
     TelemetryFrame,
 )
@@ -55,6 +59,7 @@ class AssettoCorsaSource(
     - create SessionMetadata,
     - detect completed laps,
     - detect completed sectors,
+    - build completed lap driving traces,
     - convert AC telemetry into TelemetryFrame.
     """
 
@@ -88,6 +93,10 @@ class AssettoCorsaSource(
 
         self.lap_sector_tracker = (
             AssettoCorsaLapSectorTracker()
+        )
+
+        self.lap_trace_tracker = (
+            AssettoCorsaLapTraceTracker()
         )
 
         self.session_id = str(
@@ -140,12 +149,20 @@ class AssettoCorsaSource(
             SectorEvent
         ] = deque()
 
+        self._lap_traces: deque[
+            LapTrace
+        ] = deque()
+
         self._last_lap_event: (
             LapEvent | None
         ) = None
 
         self._last_sector_event: (
             SectorEvent | None
+        ) = None
+
+        self._last_lap_trace: (
+            LapTrace | None
         ) = None
 
     @property
@@ -187,6 +204,12 @@ class AssettoCorsaSource(
         return self._last_sector_event
 
     @property
+    def last_lap_trace(
+        self,
+    ) -> LapTrace | None:
+        return self._last_lap_trace
+
+    @property
     def lap_events_pending(
         self,
     ) -> int:
@@ -200,6 +223,14 @@ class AssettoCorsaSource(
     ) -> int:
         return len(
             self._sector_events
+        )
+
+    @property
+    def lap_traces_pending(
+        self,
+    ) -> int:
+        return len(
+            self._lap_traces
         )
 
     @staticmethod
@@ -260,6 +291,8 @@ class AssettoCorsaSource(
         )
 
         self.lap_sector_tracker.reset()
+
+        self.lap_trace_tracker.reset()
 
         self._reset_stale_tracking(
             packet_id=packet_id,
@@ -322,6 +355,30 @@ class AssettoCorsaSource(
             self._last_sector_event = (
                 sector_event
             )
+
+    def _record_lap_trace(
+        self,
+        *,
+        frame: TelemetryFrame,
+        graphics: ACGraphicsSnapshot,
+    ) -> None:
+        trace = (
+            self.lap_trace_tracker.update(
+                frame=frame,
+                graphics=graphics,
+            )
+        )
+
+        if trace is None:
+            return
+
+        self._lap_traces.append(
+            trace
+        )
+
+        self._last_lap_trace = (
+            trace
+        )
 
     def _complete_current_session(
         self,
@@ -423,6 +480,14 @@ class AssettoCorsaSource(
 
         return self._sector_events.popleft()
 
+    def pop_lap_trace(
+        self,
+    ) -> LapTrace | None:
+        if not self._lap_traces:
+            return None
+
+        return self._lap_traces.popleft()
+
     def finish_current_session(
         self,
     ) -> SessionMetadata | None:
@@ -445,6 +510,8 @@ class AssettoCorsaSource(
         self.session_tracker.reset()
 
         self.lap_sector_tracker.reset()
+
+        self.lap_trace_tracker.reset()
 
         self.sample_index = 0
 
@@ -585,6 +652,11 @@ class AssettoCorsaSource(
         )
 
         self._record_lap_sector_events(
+            frame=frame,
+            graphics=graphics,
+        )
+
+        self._record_lap_trace(
             frame=frame,
             graphics=graphics,
         )

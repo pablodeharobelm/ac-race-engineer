@@ -1,10 +1,6 @@
 ﻿from ac_race_engineer.telemetry.assetto_corsa.backend import (
     AssettoCorsaBackend,
 )
-from ac_race_engineer.telemetry.assetto_corsa.capture_runner import (
-    AssettoCorsaCaptureRunner,
-    CaptureStatistics,
-)
 from ac_race_engineer.telemetry.assetto_corsa.events import (
     LapEvent,
     SectorEvent,
@@ -21,12 +17,17 @@ from ac_race_engineer.telemetry.assetto_corsa.fake import (
 from ac_race_engineer.telemetry.assetto_corsa.lap_sector_tracker import (
     AssettoCorsaLapSectorTracker,
 )
-from ac_race_engineer.telemetry.assetto_corsa.persistence import (
-    AssettoCorsaPersistenceService,
-    PersistenceDrainResult,
-)
 from ac_race_engineer.telemetry.assetto_corsa.source import (
     AssettoCorsaSource,
+)
+from ac_race_engineer.telemetry.assetto_corsa.trace import (
+    AssettoCorsaTraceComparisonService,
+    DrivingTraceSample,
+    LapTraceComparison,
+)
+from ac_race_engineer.telemetry.assetto_corsa.trace_tracker import (
+    AssettoCorsaLapTraceTracker,
+    LapTrace,
 )
 from ac_race_engineer.telemetry.assetto_corsa.windows_backend import (
     WindowsSharedMemoryBackend,
@@ -34,18 +35,19 @@ from ac_race_engineer.telemetry.assetto_corsa.windows_backend import (
 
 __all__ = [
     "AssettoCorsaBackend",
-    "AssettoCorsaCaptureRunner",
     "AssettoCorsaLapSectorTracker",
-    "AssettoCorsaPersistenceService",
+    "AssettoCorsaLapTraceTracker",
     "AssettoCorsaReadError",
     "AssettoCorsaSharedMemoryError",
     "AssettoCorsaSource",
     "AssettoCorsaStaleDataError",
+    "AssettoCorsaTraceComparisonService",
     "AssettoCorsaUnavailableError",
-    "CaptureStatistics",
+    "DrivingTraceSample",
     "FakeAssettoCorsaBackend",
     "LapEvent",
-    "PersistenceDrainResult",
+    "LapTrace",
+    "LapTraceComparison",
     "SectorEvent",
     "WindowsSharedMemoryBackend",
 ]

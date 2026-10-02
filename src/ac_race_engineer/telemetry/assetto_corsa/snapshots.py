@@ -130,6 +130,7 @@ class ACGraphicsSnapshot:
     number_of_laps: int
 
     surface_grip: float
+    normalized_car_position: float = 0.0
 
 
 @dataclass(frozen=True)

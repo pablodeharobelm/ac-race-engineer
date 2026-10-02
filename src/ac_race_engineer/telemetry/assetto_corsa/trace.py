@@ -497,3 +497,4 @@ class AssettoCorsaTraceComparisonService:
                 largest_speed_gain_progress
             ),
         )
+    

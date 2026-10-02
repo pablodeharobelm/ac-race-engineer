@@ -5,7 +5,10 @@ from ac_race_engineer.database.models import (
     CarRecord,
     ExperimentRecord,
     GoldSessionMetricsRecord,
+    LapRecord,
+    LapTraceRecord,
     MLRunRecord,
+    SectorRecord,
     SessionRecord,
     SetupRecord,
     TrackRecord,
@@ -22,6 +25,9 @@ _MODELS = (
     ExperimentRecord,
     MLRunRecord,
     GoldSessionMetricsRecord,
+    LapRecord,
+    SectorRecord,
+    LapTraceRecord,
 )
 
 
@@ -31,9 +37,13 @@ def test_database_schema_creation() -> None:
     )
 
     try:
-        Base.metadata.create_all(engine)
+        Base.metadata.create_all(
+            engine
+        )
 
-        inspector = inspect(engine)
+        inspector = inspect(
+            engine
+        )
 
         tables = set(
             inspector.get_table_names()
@@ -47,6 +57,9 @@ def test_database_schema_creation() -> None:
             "experiments",
             "ml_runs",
             "gold_session_metrics",
+            "laps",
+            "sectors",
+            "lap_traces",
         }
 
     finally:
@@ -59,12 +72,18 @@ def test_session_foreign_keys() -> None:
     )
 
     try:
-        Base.metadata.create_all(engine)
+        Base.metadata.create_all(
+            engine
+        )
 
-        inspector = inspect(engine)
+        inspector = inspect(
+            engine
+        )
 
-        foreign_keys = inspector.get_foreign_keys(
-            "sessions"
+        foreign_keys = (
+            inspector.get_foreign_keys(
+                "sessions"
+            )
         )
 
         referenced_tables = {
@@ -76,6 +95,39 @@ def test_session_foreign_keys() -> None:
             "cars",
             "tracks",
             "setups",
+        }
+
+    finally:
+        engine.dispose()
+
+
+def test_lap_trace_foreign_key() -> None:
+    engine = create_database_engine(
+        "sqlite+pysqlite:///:memory:"
+    )
+
+    try:
+        Base.metadata.create_all(
+            engine
+        )
+
+        inspector = inspect(
+            engine
+        )
+
+        foreign_keys = (
+            inspector.get_foreign_keys(
+                "lap_traces"
+            )
+        )
+
+        referenced_tables = {
+            key["referred_table"]
+            for key in foreign_keys
+        }
+
+        assert referenced_tables == {
+            "sessions",
         }
 
     finally:

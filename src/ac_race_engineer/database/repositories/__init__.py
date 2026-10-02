@@ -7,6 +7,9 @@ from ac_race_engineer.database.repositories.experiments import (
 from ac_race_engineer.database.repositories.gold_metrics import (
     GoldSessionMetricsRepository,
 )
+from ac_race_engineer.database.repositories.lap_traces import (
+    LapTraceRepository,
+)
 from ac_race_engineer.database.repositories.ml_runs import (
     MLRunRepository,
 )
@@ -24,9 +27,9 @@ __all__ = [
     "CarRepository",
     "ExperimentRepository",
     "GoldSessionMetricsRepository",
+    "LapTraceRepository",
     "MLRunRepository",
     "SessionRepository",
     "SetupRepository",
     "TrackRepository",
 ]
-

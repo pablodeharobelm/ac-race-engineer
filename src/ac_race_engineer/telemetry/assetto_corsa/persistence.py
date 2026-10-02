@@ -1,16 +1,21 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from sqlalchemy.orm import Session
 
 from ac_race_engineer.database.models import (
     CarRecord,
     LapRecord,
+    LapTraceRecord,
     SectorRecord,
     SessionRecord,
     TrackRecord,
 )
 from ac_race_engineer.database.repositories.cars import (
     CarRepository,
+)
+from ac_race_engineer.database.repositories.lap_traces import (
+    LapTraceRepository,
 )
 from ac_race_engineer.database.repositories.laps import (
     LapRepository,
@@ -27,12 +32,18 @@ from ac_race_engineer.database.repositories.tracks import (
 from ac_race_engineer.domain.session import (
     SessionMetadata,
 )
+from ac_race_engineer.storage.lap_trace import (
+    LapTraceParquetStore,
+)
 from ac_race_engineer.telemetry.assetto_corsa.events import (
     LapEvent,
     SectorEvent,
 )
 from ac_race_engineer.telemetry.assetto_corsa.source import (
     AssettoCorsaSource,
+)
+from ac_race_engineer.telemetry.assetto_corsa.trace_tracker import (
+    LapTrace,
 )
 
 
@@ -41,23 +52,33 @@ class PersistenceDrainResult:
     sessions_saved: int
     laps_saved: int
     sectors_saved: int
+    traces_saved: int
 
 
 class AssettoCorsaPersistenceService:
     """
-    Persist Assetto Corsa sessions, laps and sectors.
+    Persist Assetto Corsa sessions, laps, sectors
+    and dense lap traces.
 
-    The service keeps SQLAlchemy concerns outside
+    Relational metadata is stored in PostgreSQL.
+
+    Dense driving trace samples are stored in
+    Parquet through LapTraceParquetStore.
+
+    This keeps SQLAlchemy concerns outside
     AssettoCorsaSource.
-
-    It can persist live events before a session has ended.
-    In that case a provisional SessionRecord is created and
-    later updated when SessionMetadata becomes available.
     """
 
     def __init__(
         self,
         session: Session,
+        *,
+        trace_store: (
+            LapTraceParquetStore | None
+        ) = None,
+        trace_directory: str | Path = (
+            "data/silver/lap_traces"
+        ),
     ) -> None:
         self._session = session
 
@@ -88,6 +109,20 @@ class AssettoCorsaPersistenceService:
         self.sector_repository = (
             SectorRepository(
                 session
+            )
+        )
+
+        self.lap_trace_repository = (
+            LapTraceRepository(
+                session
+            )
+        )
+
+        self.trace_store = (
+            trace_store
+            if trace_store is not None
+            else LapTraceParquetStore(
+                trace_directory
             )
         )
 
@@ -196,6 +231,37 @@ class AssettoCorsaPersistenceService:
             started_at=event.timestamp,
         )
 
+    def _ensure_trace_session(
+        self,
+        trace: LapTrace,
+    ) -> SessionRecord:
+        existing = (
+            self.session_repository.get_by_id(
+                trace.session_id
+            )
+        )
+
+        if existing is not None:
+            return existing
+
+        car = self._get_or_create_car(
+            trace.car_id
+        )
+
+        track = (
+            self._get_or_create_track(
+                trace.track_id
+            )
+        )
+
+        return self.session_repository.save(
+            session_id=trace.session_id,
+            car_id=car.id,
+            track_id=track.id,
+            session_type="test",
+            source="assetto_corsa",
+        )
+
     def save_completed_session(
         self,
         metadata: SessionMetadata,
@@ -285,6 +351,47 @@ class AssettoCorsaPersistenceService:
             occurred_at=event.timestamp,
         )
 
+    def save_lap_trace(
+        self,
+        trace: LapTrace,
+    ) -> LapTraceRecord:
+        self._ensure_trace_session(
+            trace
+        )
+
+        parquet_file = (
+            self.trace_store.write(
+                trace
+            )
+        )
+
+        first_sample = (
+            trace.samples[0]
+        )
+
+        last_sample = (
+            trace.samples[-1]
+        )
+
+        return self.lap_trace_repository.save(
+            session_id=trace.session_id,
+            lap_number=trace.lap_number,
+            lap_time_ms=trace.lap_time_ms,
+            sample_count=trace.sample_count,
+            progress_start=(
+                first_sample.progress
+            ),
+            progress_end=(
+                last_sample.progress
+            ),
+            parquet_path=(
+                parquet_file.as_posix()
+            ),
+            schema_version=(
+                self.trace_store.SCHEMA_VERSION
+            ),
+        )
+
     def drain_source(
         self,
         source: AssettoCorsaSource,
@@ -292,6 +399,7 @@ class AssettoCorsaPersistenceService:
         sessions_saved = 0
         laps_saved = 0
         sectors_saved = 0
+        traces_saved = 0
 
         while True:
             metadata = (
@@ -335,12 +443,31 @@ class AssettoCorsaPersistenceService:
 
             sectors_saved += 1
 
+        while True:
+            trace = (
+                source.pop_lap_trace()
+            )
+
+            if trace is None:
+                break
+
+            self.save_lap_trace(
+                trace
+            )
+
+            traces_saved += 1
+
         return PersistenceDrainResult(
             sessions_saved=(
                 sessions_saved
             ),
-            laps_saved=laps_saved,
+            laps_saved=(
+                laps_saved
+            ),
             sectors_saved=(
                 sectors_saved
+            ),
+            traces_saved=(
+                traces_saved
             ),
         )

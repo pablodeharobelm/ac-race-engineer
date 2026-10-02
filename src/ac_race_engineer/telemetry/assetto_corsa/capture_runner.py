@@ -20,6 +20,7 @@ class CaptureStatistics:
     sessions_saved: int
     laps_saved: int
     sectors_saved: int
+    traces_saved: int
 
 
 class AssettoCorsaCaptureRunner:
@@ -28,9 +29,11 @@ class AssettoCorsaCaptureRunner:
 
     Responsibilities:
     - read TelemetryFrame objects,
-    - drain generated session/lap/sector events,
-    - persist those events,
-    - close the current session cleanly when capture ends.
+    - drain session events,
+    - drain lap events,
+    - drain sector events,
+    - persist completed driving traces,
+    - close the current session cleanly.
     """
 
     def __init__(
@@ -50,6 +53,7 @@ class AssettoCorsaCaptureRunner:
         int,
         int,
         int,
+        int,
     ]:
         result = (
             self.persistence.drain_source(
@@ -61,11 +65,13 @@ class AssettoCorsaCaptureRunner:
             result.sessions_saved,
             result.laps_saved,
             result.sectors_saved,
+            result.traces_saved,
         )
 
     def finish(
         self,
     ) -> tuple[
+        int,
         int,
         int,
         int,
@@ -107,6 +113,7 @@ class AssettoCorsaCaptureRunner:
         sessions_saved = 0
         laps_saved = 0
         sectors_saved = 0
+        traces_saved = 0
 
         while (
             samples is None
@@ -127,6 +134,7 @@ class AssettoCorsaCaptureRunner:
                 new_sessions,
                 new_laps,
                 new_sectors,
+                new_traces,
             ) = self._drain_events()
 
             sessions_saved += (
@@ -139,6 +147,10 @@ class AssettoCorsaCaptureRunner:
 
             sectors_saved += (
                 new_sectors
+            )
+
+            traces_saved += (
+                new_traces
             )
 
             if (
@@ -156,6 +168,7 @@ class AssettoCorsaCaptureRunner:
             final_sessions,
             final_laps,
             final_sectors,
+            final_traces,
         ) = self.finish()
 
         sessions_saved += (
@@ -170,13 +183,22 @@ class AssettoCorsaCaptureRunner:
             final_sectors
         )
 
+        traces_saved += (
+            final_traces
+        )
+
         return CaptureStatistics(
             frames_read=frames_read,
             sessions_saved=(
                 sessions_saved
             ),
-            laps_saved=laps_saved,
+            laps_saved=(
+                laps_saved
+            ),
             sectors_saved=(
                 sectors_saved
+            ),
+            traces_saved=(
+                traces_saved
             ),
         )

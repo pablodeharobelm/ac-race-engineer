@@ -6,14 +6,24 @@ from ac_race_engineer.database.session import (
     create_database_engine,
     database_session,
 )
-from ac_race_engineer.telemetry.assetto_corsa import (
+from ac_race_engineer.telemetry.assetto_corsa.capture_runner import (
     AssettoCorsaCaptureRunner,
-    AssettoCorsaPersistenceService,
+)
+from ac_race_engineer.telemetry.assetto_corsa.exceptions import (
     AssettoCorsaReadError,
-    AssettoCorsaSource,
     AssettoCorsaStaleDataError,
     AssettoCorsaUnavailableError,
+)
+from ac_race_engineer.telemetry.assetto_corsa.fake import (
     FakeAssettoCorsaBackend,
+)
+from ac_race_engineer.telemetry.assetto_corsa.persistence import (
+    AssettoCorsaPersistenceService,
+)
+from ac_race_engineer.telemetry.assetto_corsa.source import (
+    AssettoCorsaSource,
+)
+from ac_race_engineer.telemetry.assetto_corsa.windows_backend import (
     WindowsSharedMemoryBackend,
 )
 from ac_race_engineer.telemetry.models import (
@@ -24,7 +34,9 @@ from ac_race_engineer.telemetry.models import (
 def _positive_int(
     value: str,
 ) -> int:
-    parsed = int(value)
+    parsed = int(
+        value
+    )
 
     if parsed <= 0:
         raise argparse.ArgumentTypeError(
@@ -37,7 +49,9 @@ def _positive_int(
 def _non_negative_float(
     value: str,
 ) -> float:
-    parsed = float(value)
+    parsed = float(
+        value
+    )
 
     if parsed < 0.0:
         raise argparse.ArgumentTypeError(
@@ -51,12 +65,14 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Capture Assetto Corsa telemetry "
-            "and persist session events"
+            "and persist session data"
         )
     )
 
-    mode = parser.add_mutually_exclusive_group(
-        required=True
+    mode = (
+        parser.add_mutually_exclusive_group(
+            required=True
+        )
     )
 
     mode.add_argument(
@@ -72,7 +88,8 @@ def _build_parser() -> argparse.ArgumentParser:
         "--real",
         action="store_true",
         help=(
-            "Read real Assetto Corsa shared memory"
+            "Read real Assetto Corsa "
+            "shared memory"
         ),
     )
 
@@ -82,7 +99,8 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help=(
             "Number of frames to capture. "
-            "If omitted, capture continues until Ctrl+C."
+            "If omitted, capture continues "
+            "until Ctrl+C."
         ),
     )
 
@@ -99,7 +117,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--quiet",
         action="store_true",
-        help="Do not print every telemetry frame",
+        help=(
+            "Do not print every telemetry frame"
+        ),
     )
 
     return parser
@@ -108,7 +128,9 @@ def _build_parser() -> argparse.ArgumentParser:
 def _print_frame(
     frame: TelemetryFrame,
 ) -> None:
-    vehicle = frame.vehicle
+    vehicle = (
+        frame.vehicle
+    )
 
     print(
         f"[{frame.sample_index:06d}] "
@@ -127,11 +149,21 @@ def _print_summary(
     sessions: int,
     laps: int,
     sectors: int,
+    traces: int,
 ) -> None:
     print()
-    print("=" * 60)
-    print("Assetto Corsa capture summary")
-    print("=" * 60)
+
+    print(
+        "=" * 60
+    )
+
+    print(
+        "Assetto Corsa capture summary"
+    )
+
+    print(
+        "=" * 60
+    )
 
     print(
         f"Frames read:       {frames}"
@@ -149,6 +181,10 @@ def _print_summary(
         f"Sectors saved:     {sectors}"
     )
 
+    print(
+        f"Lap traces saved:  {traces}"
+    )
+
 
 def _run_fake(
     *,
@@ -156,7 +192,9 @@ def _run_fake(
     interval: float,
     quiet: bool,
 ) -> int:
-    backend = FakeAssettoCorsaBackend()
+    backend = (
+        FakeAssettoCorsaBackend()
+    )
 
     source = AssettoCorsaSource(
         backend,
@@ -178,10 +216,15 @@ def _run_real(
     quiet: bool,
 ) -> int:
     try:
-        with WindowsSharedMemoryBackend() as backend:
-            source = AssettoCorsaSource(
-                backend,
-                stale_timeout_seconds=2.0,
+        with (
+            WindowsSharedMemoryBackend()
+            as backend
+        ):
+            source = (
+                AssettoCorsaSource(
+                    backend,
+                    stale_timeout_seconds=2.0,
+                )
             )
 
             print(
@@ -204,7 +247,9 @@ def _run_real(
         )
 
         print(
-            str(exc),
+            str(
+                exc
+            ),
             file=sys.stderr,
         )
 
@@ -224,7 +269,9 @@ def _run_real(
         )
 
         print(
-            str(exc),
+            str(
+                exc
+            ),
             file=sys.stderr,
         )
 
@@ -238,7 +285,9 @@ def _run_real(
         )
 
         print(
-            str(exc),
+            str(
+                exc
+            ),
             file=sys.stderr,
         )
 
@@ -252,12 +301,15 @@ def _run_capture(
     interval: float,
     quiet: bool,
 ) -> int:
-    engine = create_database_engine()
+    engine = (
+        create_database_engine()
+    )
 
     frames_read = 0
     sessions_saved = 0
     laps_saved = 0
     sectors_saved = 0
+    traces_saved = 0
 
     try:
         with database_session(
@@ -269,9 +321,11 @@ def _run_capture(
                 )
             )
 
-            runner = AssettoCorsaCaptureRunner(
-                source=source,
-                persistence=persistence,
+            runner = (
+                AssettoCorsaCaptureRunner(
+                    source=source,
+                    persistence=persistence,
+                )
             )
 
             callback = (
@@ -303,8 +357,13 @@ def _run_capture(
                     result.sectors_saved
                 )
 
+                traces_saved += (
+                    result.traces_saved
+                )
+
             except KeyboardInterrupt:
                 print()
+
                 print(
                     "Capture stopped by user."
                 )
@@ -313,6 +372,7 @@ def _run_capture(
                     final_sessions,
                     final_laps,
                     final_sectors,
+                    final_traces,
                 ) = runner.finish()
 
                 sessions_saved += (
@@ -327,6 +387,10 @@ def _run_capture(
                     final_sectors
                 )
 
+                traces_saved += (
+                    final_traces
+                )
+
     finally:
         engine.dispose()
 
@@ -335,6 +399,7 @@ def _run_capture(
         sessions=sessions_saved,
         laps=laps_saved,
         sectors=sectors_saved,
+        traces=traces_saved,
     )
 
     return 0
@@ -343,14 +408,19 @@ def _run_capture(
 def main(
     argv: Sequence[str] | None = None,
 ) -> int:
-    parser = _build_parser()
+    parser = (
+        _build_parser()
+    )
 
-    args = parser.parse_args(
-        argv
+    args = (
+        parser.parse_args(
+            argv
+        )
     )
 
     print(
-        "AC Race Engineer - Assetto Corsa Capture"
+        "AC Race Engineer - "
+        "Assetto Corsa Capture"
     )
 
     print(

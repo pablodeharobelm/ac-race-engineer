@@ -324,6 +324,7 @@ class GoldSessionMetricsRecord(Base):
         server_default=func.now(),
     )
 
+
 class LapRecord(Base):
     __tablename__ = "laps"
 
@@ -398,9 +399,7 @@ class SectorRecord(Base):
             "session_id",
             "lap_number",
             "sector_number",
-            name=(
-                "uq_sectors_session_lap_sector"
-            ),
+            name="uq_sectors_session_lap_sector",
         ),
     )
 
@@ -458,3 +457,65 @@ class SectorRecord(Base):
         server_default=func.now(),
     )
 
+
+class LapTraceRecord(Base):
+    __tablename__ = "lap_traces"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "session_id",
+            "lap_number",
+            name=(
+                "uq_lap_traces_session_lap_number"
+            ),
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    session_id: Mapped[str] = mapped_column(
+        ForeignKey(
+            "sessions.id",
+            ondelete="CASCADE",
+        ),
+        index=True,
+    )
+
+    lap_number: Mapped[int] = mapped_column(
+        Integer,
+        index=True,
+    )
+
+    lap_time_ms: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    sample_count: Mapped[int] = mapped_column(
+        Integer,
+    )
+
+    progress_start: Mapped[float] = mapped_column(
+        Float,
+    )
+
+    progress_end: Mapped[float] = mapped_column(
+        Float,
+    )
+
+    parquet_path: Mapped[str] = mapped_column(
+        String(500),
+    )
+
+    schema_version: Mapped[int] = mapped_column(
+        Integer,
+        default=1,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )

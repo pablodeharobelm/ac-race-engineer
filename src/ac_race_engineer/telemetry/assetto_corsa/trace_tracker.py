@@ -249,6 +249,8 @@ class AssettoCorsaLapTraceTracker:
             steering_angle_deg=(
                 frame.vehicle.steering_angle_deg
             ),
+            gear=frame.vehicle.gear,
+            clutch=frame.vehicle.clutch,
         )
 
         if self._samples:

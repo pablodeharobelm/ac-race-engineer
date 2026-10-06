@@ -356,3 +356,16 @@ def test_rejects_session_id_with_path_separator(
             session_id="invalid/session",
             lap_number=1,
         )
+
+def test_optional_controls_roundtrip_and_legacy_columns(tmp_path):
+    from dataclasses import replace
+    store = LapTraceParquetStore(tmp_path)
+    trace = build_trace()
+    samples = tuple(replace(sample, gear=3, clutch=0.4) for sample in trace.samples)
+    path = store.write(replace(trace, samples=samples))
+    loaded = store.read_file(path)
+    assert all(sample.gear == 3 and sample.clutch == 0.4 for sample in loaded.samples)
+    table = pq.ParquetFile(path).read().drop(["gear", "clutch"])
+    pq.write_table(table, path)
+    legacy = store.read_file(path)
+    assert all(sample.gear is None and sample.clutch is None for sample in legacy.samples)

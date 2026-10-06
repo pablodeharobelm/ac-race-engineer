@@ -1,9 +1,9 @@
-﻿import os
+import os
 
 DEFAULT_DATABASE_URL = (
     "postgresql+psycopg://"
     "ac_race:ac_race_dev"
-    "@localhost:5432/"
+    "@localhost:55432/"
     "ac_race_engineer"
 )
 

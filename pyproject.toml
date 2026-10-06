@@ -9,8 +9,8 @@ description = "Telemetry, vehicle dynamics and AI race engineering platform for 
 requires-python = ">=3.11"
 
 dependencies = [
+    "altair>=5.0,<7.0",
     "pydantic>=2.0,<3.0",
-    "pyarrow>=15.0",
     "tzdata>=2025.2",
     "pyarrow>=18.0",
     "pyspark[sql]>=4.2,<4.3",
@@ -23,7 +23,7 @@ dependencies = [
     "psycopg[binary]>=3.3,<4",
     "joblib>=1.4",
     "fastapi>=0.115,<1.0",
-    "streamlit>=1.40,<2.0",
+    "streamlit>=1.57,<2.0",
     "uvicorn[standard]>=0.34,<1.0"
 ]
 
@@ -38,6 +38,9 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"ac_race_engineer.dashboard" = ["assets/*.svg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

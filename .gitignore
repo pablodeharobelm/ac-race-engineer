@@ -5,6 +5,7 @@ __pycache__/
 
 # Virtual environment
 .venv/
+.venv-*/
 venv/
 
 # IDE
@@ -57,3 +58,16 @@ data/streaming/
 
 # Kafka streaming sinks and checkpoints
 data/kafka_stream/
+
+# Local test scratch directories
+.test-tmp*/
+
+# Local end-to-end demonstration database
+data/demo.sqlite*
+
+# Local launcher database
+data/local.sqlite*
+
+# Generated local telemetry reports
+data/report-preview/
+data/informe-demostracion.html

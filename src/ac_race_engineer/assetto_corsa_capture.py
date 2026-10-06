@@ -1,4 +1,5 @@
 import argparse
+import math
 import sys
 from collections.abc import Sequence
 
@@ -53,9 +54,9 @@ def _non_negative_float(
         value
     )
 
-    if parsed < 0.0:
+    if not math.isfinite(parsed) or parsed < 0.0:
         raise argparse.ArgumentTypeError(
-            "value must be greater than or equal to 0"
+            "value must be finite and greater than or equal to 0"
         )
 
     return parsed
@@ -317,7 +318,8 @@ def _run_capture(
         ) as session:
             persistence = (
                 AssettoCorsaPersistenceService(
-                    session
+                    session,
+                    commit_on_drain=True,
                 )
             )
 
@@ -368,28 +370,12 @@ def _run_capture(
                     "Capture stopped by user."
                 )
 
-                (
-                    final_sessions,
-                    final_laps,
-                    final_sectors,
-                    final_traces,
-                ) = runner.finish()
-
-                sessions_saved += (
-                    final_sessions
-                )
-
-                laps_saved += (
-                    final_laps
-                )
-
-                sectors_saved += (
-                    final_sectors
-                )
-
-                traces_saved += (
-                    final_traces
-                )
+                result = runner.statistics
+                frames_read = result.frames_read
+                sessions_saved = result.sessions_saved
+                laps_saved = result.laps_saved
+                sectors_saved = result.sectors_saved
+                traces_saved = result.traces_saved
 
     finally:
         engine.dispose()

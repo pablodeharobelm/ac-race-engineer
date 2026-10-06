@@ -1,14 +1,13 @@
 from datetime import datetime, timezone
 from unittest.mock import Mock
 
-from ac_race_engineer.telemetry.assetto_corsa.session_persistence import (
-    AssettoCorsaSessionPersistenceService,
-)
-
 from ac_race_engineer.domain.session import (
     SessionConditions,
     SessionMetadata,
     SessionType,
+)
+from ac_race_engineer.telemetry.assetto_corsa.session_persistence import (
+    AssettoCorsaSessionPersistenceService,
 )
 
 

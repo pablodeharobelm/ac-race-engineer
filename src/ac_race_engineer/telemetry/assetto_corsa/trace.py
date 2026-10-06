@@ -22,6 +22,8 @@ class DrivingTraceSample:
     brake: float
 
     steering_angle_deg: float
+    gear: int | None = None
+    clutch: float | None = None
 
 
 @dataclass(frozen=True)

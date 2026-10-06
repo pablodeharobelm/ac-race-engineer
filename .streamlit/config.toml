@@ -1,0 +1,20 @@
+[client]
+toolbarMode = "minimal"
+
+[theme]
+base = "dark"
+primaryColor = "#B92345"
+backgroundColor = "#0B1018"
+secondaryBackgroundColor = "#141E2B"
+textColor = "#EAF1FA"
+borderColor = "#29384B"
+baseRadius = "large"
+font = "sans-serif"
+chartCategoricalColors = ["#71CFFF", "#FB5168", "#35D78B", "#D97706"]
+
+redColor = "#FF6577"
+greenColor = "#35D78B"
+blueColor = "#71CFFF"
+redTextColor = "#FF8896"
+greenTextColor = "#55E5A0"
+blueTextColor = "#91DCFF"

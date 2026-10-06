@@ -16,6 +16,19 @@ from ac_race_engineer.dashboard.components import (
     render_history_table,
     render_trace_comparison,
 )
+from ac_race_engineer.dashboard.driving import render_driving
+from ac_race_engineer.dashboard.locale_es import api_error_message, format_date, friendly_name
+from ac_race_engineer.dashboard.report_export import render_report_download
+from ac_race_engineer.dashboard.saved_sessions import render_saved_sessions
+from ac_race_engineer.dashboard.trace_quality import render_trace_quality
+from ac_race_engineer.dashboard.trace_transfer import (
+    distance_extent,
+    ensure_same_context,
+    needs_estimated_time,
+    normalize_distance_rows,
+    sample_rows,
+    uploaded_text,
+)
 
 DEFAULT_REFERENCE_TRACE = [
     {
@@ -81,33 +94,46 @@ def main() -> None:
     )
 
     st.title(
-        "🏁 AC Race Engineer"
+        "Tu ingeniero de pista"
     )
 
     st.caption(
-        "Telemetry analysis, coaching and AI-assisted "
-        "race engineering for Assetto Corsa."
+        "Entiende tu conducción, encuentra dónde pierdes tiempo "
+        "y mejora vuelta a vuelta."
     )
 
+    with st.sidebar:
+        st.subheader("AC Race Engineer")
+        st.caption("Telemetría que te ayuda a conducir mejor.")
+        with st.expander("Imágenes del juego"):
+            st.text_input(
+                "Carpeta de Assetto Corsa", value=os.getenv("ASSETTO_CORSA_PATH", ""),
+                key="assetto_corsa_path", placeholder="Carpeta donde está instalado el juego",
+            )
+            st.caption("En el ordenador con el juego, indica su carpeta para mostrar sus imágenes. Aquí usamos ilustraciones provisionales.")
     client = _build_client()
 
-    _render_connection_status(
-        client
+    page = st.segmented_control(
+        "Tu espacio", ["Mis sesiones", "Conducción", "Historial", "Importar datos"], default="Mis sesiones",
     )
-
-    analysis_tab, history_tab = st.tabs(
-        [
-            "New analysis",
-            "History",
-        ]
-    )
-
-    with analysis_tab:
+    page = page or "Mis sesiones"
+    if page == "Conducción":
+        render_driving(client)
+        return
+    monitor = st.session_state.pop("live_monitor", None)
+    if monitor:
+        monitor.close()
+    playback = st.session_state.get("driving_playback")
+    if playback is not None:
+        playback.playing = False
+    _render_connection_status(client)
+    if page == "Mis sesiones":
+        render_saved_sessions(client)
+    elif page == "Importar datos":
         _render_analysis_page(
             client
         )
-
-    with history_tab:
+    elif page == "Historial":
         _render_history_page(
             client
         )
@@ -133,7 +159,7 @@ def _render_connection_status(
 
     except RaceEngineerAPIError:
         st.error(
-            "Race Engineer API is unavailable."
+            "El servicio de análisis no está disponible. Inícialo para consultar tus sesiones."
         )
         return
 
@@ -144,13 +170,13 @@ def _render_connection_status(
 
     if status == "ok":
         st.success(
-            "Race Engineer API connected.",
+            "Servicio de análisis conectado.",
             icon="✅",
         )
 
     else:
         st.warning(
-            f"API status: {status}"
+            "El servicio de análisis no está listo."
         )
 
 
@@ -158,8 +184,10 @@ def _render_analysis_page(
     client: RaceEngineerAPIClient,
 ) -> None:
     st.header(
-        "Analyze two laps"
+        "Comparar datos importados"
     )
+    st.caption("Carga dos vueltas en JSON: exportadas desde Mis sesiones o con distancia en metros y pedales en porcentaje. La importación analiza los archivos; no añade una sesión al catálogo.")
+    input_mode = st.segmented_control("Cómo quieres cargar las vueltas", ["Archivos", "Datos de ejemplo", "Pegar JSON"], default="Archivos", key="import_mode")
 
     settings_column, persistence_column = (
         st.columns(
@@ -169,21 +197,21 @@ def _render_analysis_page(
 
     with settings_column:
         reference_lap_number = st.number_input(
-            "Reference lap",
+            "Vuelta de referencia",
             min_value=1,
             value=1,
             step=1,
         )
 
         target_lap_number = st.number_input(
-            "Target lap",
+            "Vuelta que analizas",
             min_value=1,
             value=2,
             step=1,
         )
 
         grid_points = st.number_input(
-            "Grid points",
+            "Precisión de la comparación",
             min_value=2,
             max_value=5001,
             value=201,
@@ -191,31 +219,24 @@ def _render_analysis_page(
         )
 
         explain = st.checkbox(
-            "Generate AI Race Engineer explanation",
-            value=True,
+            "Añadir explicación con IA",
+            value=False,
         )
 
     with persistence_column:
         persist = st.checkbox(
-            "Persist analysis",
+            "Guardar en el historial",
             value=False,
         )
 
         session_id = st.text_input(
-            "Session ID",
+            "Identificador de sesión",
             value="",
             disabled=not persist,
-            placeholder="optional-session-id",
+            placeholder="Opcional",
         )
 
-        language = st.selectbox(
-            "Explanation language",
-            options=[
-                "es",
-                "en",
-            ],
-            index=0,
-        )
+        language = "es"
 
     trace_column_a, trace_column_b = (
         st.columns(
@@ -223,107 +244,104 @@ def _render_analysis_page(
         )
     )
 
-    with trace_column_a:
-        st.subheader(
-            "Reference trace"
-        )
+    reference_text = json.dumps(DEFAULT_REFERENCE_TRACE)
+    target_text = json.dumps(DEFAULT_TARGET_TRACE)
+    reference_upload = target_upload = None
+    if input_mode == "Archivos":
+        with trace_column_a:
+            reference_upload = st.file_uploader("Archivo de la vuelta de referencia", type=["json"], max_upload_size=20, key="reference_upload")
+        with trace_column_b:
+            target_upload = st.file_uploader("Archivo de la vuelta que analizas", type=["json"], max_upload_size=20, key="target_upload")
+    elif input_mode == "Pegar JSON":
+        with trace_column_a:
+            reference_text = st.text_area("Datos de la referencia (JSON)", value=json.dumps(DEFAULT_REFERENCE_TRACE, indent=2), height=250)
+        with trace_column_b:
+            target_text = st.text_area("Datos de tu vuelta (JSON)", value=json.dumps(DEFAULT_TARGET_TRACE, indent=2), height=250)
+    else:
+        st.info("Compararás dos vueltas de ejemplo. Estos datos son simulados.")
 
-        reference_text = st.text_area(
-            "Reference trace JSON",
-            value=json.dumps(
-                DEFAULT_REFERENCE_TRACE,
-                indent=2,
-            ),
-            height=380,
-            label_visibility="collapsed",
-        )
-
-    with trace_column_b:
-        st.subheader(
-            "Target trace"
-        )
-
-        target_text = st.text_area(
-            "Target trace JSON",
-            value=json.dumps(
-                DEFAULT_TARGET_TRACE,
-                indent=2,
-            ),
-            height=380,
-            label_visibility="collapsed",
-        )
-
-    if not st.button(
-        "Analyze laps",
+    estimate_times = st.checkbox("Permitir tiempos estimados", value=False, help="Para archivos sin tiempos: calcula una aproximación a partir de distancia y velocidad. No equivale a telemetría cronometrada.")
+    if st.button(
+        "Comparar vueltas",
+        disabled=input_mode == "Archivos" and (reference_upload is None or target_upload is None),
         type="primary",
-        use_container_width=True,
+        width="stretch",
     ):
-        return
+        st.session_state.pop("imported_analysis", None)
 
-    try:
-        reference_trace = _parse_trace(
-            reference_text,
-            label="reference trace",
-        )
-
-        target_trace = _parse_trace(
-            target_text,
-            label="target trace",
-        )
-
-    except (ValueError, TypeError) as exc:
-        st.error(
-            str(
-                exc
-            )
-        )
-        return
-
-    payload: dict[str, Any] = {
-        "reference_lap_number": int(
-            reference_lap_number
-        ),
-        "target_lap_number": int(
-            target_lap_number
-        ),
-        "reference_trace": (
-            reference_trace
-        ),
-        "target_trace": (
-            target_trace
-        ),
-        "grid_points": int(
-            grid_points
-        ),
-        "explain": explain,
-        "language": language,
-        "persist": persist,
-        "session_id": (
-            session_id.strip()
-            if persist
-            and session_id.strip()
-            else None
-        ),
-    }
-
-    try:
-        with st.spinner(
-            "Running Race Engineer analysis..."
-        ):
-            analysis = client.analyze(
-                payload
+        try:
+            if input_mode == "Archivos":
+                reference_text, target_text = uploaded_text(reference_upload), uploaded_text(target_upload)
+            track_length = distance_extent(reference_text, target_text)
+            reference_trace = _parse_trace(
+                reference_text,
+                label="los datos de referencia", allow_estimated_time=estimate_times, track_length=track_length,
             )
 
-    except RaceEngineerAPIError as exc:
-        st.error(
-            str(
-                exc
+            target_trace = _parse_trace(
+                target_text,
+                label="los datos de tu vuelta", allow_estimated_time=estimate_times, track_length=track_length,
             )
-        )
+
+            if input_mode == "Archivos":
+                ensure_same_context(reference_text, target_text)
+            time_estimated = needs_estimated_time(reference_text, target_text)
+
+        except (ValueError, TypeError, KeyError) as exc:
+            st.error(str(exc))
+            return
+
+        payload: dict[str, Any] = {
+            "reference_lap_number": int(
+                reference_lap_number
+            ),
+            "target_lap_number": int(
+                target_lap_number
+            ),
+            "reference_trace": (
+                reference_trace
+            ),
+            "target_trace": (
+                target_trace
+            ),
+            "grid_points": int(
+                grid_points
+            ),
+            "explain": explain,
+            "language": language,
+            "persist": persist and not time_estimated,
+            "session_id": (
+                session_id.strip()
+                if persist
+                and session_id.strip()
+                else None
+            ),
+        }
+
+        try:
+            with st.spinner(
+                "Analizando las vueltas…"
+            ):
+                analysis = client.analyze(
+                    payload
+                )
+
+        except RaceEngineerAPIError as exc:
+            st.error(api_error_message(exc))
+            return
+
+        analysis["time_estimated"] = time_estimated
+        st.session_state["imported_analysis"] = (analysis, reference_trace, target_trace)
+
+    saved = st.session_state.get("imported_analysis")
+    if saved is None:
         return
+    analysis, reference_trace, target_trace = saved
+    if analysis.get("time_estimated"):
+        st.warning("Tiempos aproximados calculados a partir de distancia y velocidad. Los huecos entre muestras reducen la precisión. Este análisis no se guarda en el historial.")
 
     st.success(
-        "Analysis completed."
+        "Análisis completado."
     )
 
     analysis_id = analysis.get(
@@ -332,9 +350,11 @@ def _render_analysis_page(
 
     if analysis_id:
         st.caption(
-            f"Persisted analysis: {analysis_id}"
+            "Análisis guardado en el historial."
         )
 
+    render_report_download(analysis, key="download-import-report", reference_trace=reference_trace, target_trace=target_trace)
+    render_trace_quality(reference_trace, target_trace, estimated=bool(analysis.get("time_estimated")))
     render_analysis_summary(
         analysis
     )
@@ -361,22 +381,22 @@ def _render_history_page(
     client: RaceEngineerAPIClient,
 ) -> None:
     st.header(
-        "Analysis history"
+        "Tus análisis guardados"
     )
 
     mode = st.radio(
-        "History source",
+        "Qué quieres consultar",
         options=[
-            "Recent analyses",
-            "Session",
+            "Últimos análisis",
+            "Por sesión",
         ],
         horizontal=True,
     )
 
     try:
-        if mode == "Recent analyses":
+        if mode == "Últimos análisis":
             limit = st.slider(
-                "Maximum analyses",
+                "Número máximo de análisis",
                 min_value=1,
                 max_value=100,
                 value=20,
@@ -387,16 +407,21 @@ def _render_history_page(
             )
 
         else:
-            session_id = st.text_input(
-                "Session ID to inspect",
+            sessions = client.list_sessions(limit=100)
+            if not sessions:
+                st.info("Todavía no hay sesiones registradas.")
+                return
+            session_labels = {
+                session["session_id"]: (
+                    f"{friendly_name(session['car_key'])} · {friendly_name(session['track_key'])} · "
+                    f"{session['session_id'][:8]}"
+                )
+                for session in sessions
+            }
+            session_id = st.selectbox(
+                "Sesión que quieres consultar", list(session_labels), format_func=session_labels.get,
                 key="history-session-id",
             )
-
-            if not session_id.strip():
-                st.info(
-                    "Enter a session ID."
-                )
-                return
 
             analyses = (
                 client.list_for_session(
@@ -405,11 +430,7 @@ def _render_history_page(
             )
 
     except RaceEngineerAPIError as exc:
-        st.error(
-            str(
-                exc
-            )
-        )
+        st.error(api_error_message(exc))
         return
 
     render_history_table(
@@ -419,35 +440,20 @@ def _render_history_page(
     if not analyses:
         return
 
-    options = {
-        (
-            f"{analysis.get('analysis_id')} "
-            f"| laps "
-            f"{analysis.get('reference_lap_number')}"
-            " → "
-            f"{analysis.get('target_lap_number')}"
-        ): analysis.get(
-            "analysis_id"
-        )
-        for analysis in analyses
-        if analysis.get(
-            "analysis_id"
-        )
-    }
-
+    options = {analysis["analysis_id"]: analysis for analysis in analyses if analysis.get("analysis_id")}
     if not options:
         return
 
-    selected_label = st.selectbox(
-        "Open persisted analysis",
-        options=list(
-            options
-        ),
-    )
+    def analysis_label(analysis_id: str) -> str:
+        analysis = options[analysis_id]
+        return (
+            f"{format_date(analysis.get('created_at'))} · "
+            f"Vueltas {analysis.get('reference_lap_number')} → {analysis.get('target_lap_number')}"
+        )
 
-    selected_id = options[
-        selected_label
-    ]
+    selected_id = st.selectbox(
+        "Abrir un análisis guardado", list(options), format_func=analysis_label,
+    )
 
     try:
         selected = client.get_analysis(
@@ -455,15 +461,11 @@ def _render_history_page(
         )
 
     except RaceEngineerAPIError as exc:
-        st.error(
-            str(
-                exc
-            )
-        )
+        st.error(api_error_message(exc))
         return
 
-    st.divider()
 
+    render_report_download(selected, key="download-history-report")
     render_analysis_summary(
         selected
     )
@@ -501,6 +503,8 @@ def _parse_trace(
     text: str,
     *,
     label: str,
+    allow_estimated_time: bool = False,
+    track_length: float | None = None,
 ) -> list[dict[str, Any]]:
     try:
         payload = json.loads(
@@ -509,22 +513,23 @@ def _parse_trace(
 
     except json.JSONDecodeError as exc:
         raise ValueError(
-            f"Invalid JSON in {label}: {exc.msg}"
+            f"No se puede leer {label}: revisa la línea {exc.lineno} y la columna {exc.colno}."
         ) from exc
 
+    payload = sample_rows(payload)
     if not isinstance(
         payload,
         list,
     ):
         raise TypeError(
-            f"{label} must be a JSON array"
+            f"{label} debe contener una lista de muestras."
         )
 
     if len(
         payload
     ) < 2:
         raise ValueError(
-            f"{label} must contain at least two samples"
+            f"{label} debe incluir al menos dos muestras."
         )
 
     for index, sample in enumerate(
@@ -535,9 +540,21 @@ def _parse_trace(
             dict,
         ):
             raise TypeError(
-                f"{label} sample {index} must be an object"
+                f"La muestra {index + 1} de {label} debe ser un objeto de datos."
             )
 
+    try:
+        payload, _estimated = normalize_distance_rows(payload, allow_estimated_time=allow_estimated_time, track_length=track_length)
+    except (KeyError, TypeError) as exc:
+        raise ValueError("El archivo contiene muestras incompletas de distancia, velocidad o pedales.") from exc
+    from pydantic import ValidationError
+
+    from ac_race_engineer.api.schemas import DrivingTraceSampleRequest
+    for index, sample in enumerate(payload):
+        try:
+            DrivingTraceSampleRequest.model_validate(sample)
+        except ValidationError as exc:
+            raise ValueError(f"La muestra {index + 1} de {label} contiene datos incompletos o fuera de rango.") from exc
     return payload
 
 

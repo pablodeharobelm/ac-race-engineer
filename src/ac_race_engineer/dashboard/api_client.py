@@ -52,6 +52,42 @@ class RaceEngineerAPIClient:
             payload=payload,
         )
 
+    def list_sessions(self, *, limit: int = 20) -> list[dict[str, Any]]:
+        if not 1 <= limit <= 100:
+            raise ValueError("limit must be between 1 and 100")
+        response = self._request(method="GET", path=f"/v1/sessions?{urlencode({'limit': limit})}")
+        if not isinstance(response, list):
+            raise RaceEngineerAPIError("API returned an invalid session list")
+        return response
+
+    @staticmethod
+    def _session_path(session_id: str) -> str:
+        normalized = session_id.strip()
+        if not normalized:
+            raise ValueError("session_id cannot be empty")
+        return f"/v1/sessions/{quote(normalized, safe='')}"
+
+    def list_laps(self, session_id: str) -> list[dict[str, Any]]:
+        response = self._request(method="GET", path=f"{self._session_path(session_id)}/laps")
+        if not isinstance(response, list):
+            raise RaceEngineerAPIError("API returned an invalid lap list")
+        return response
+
+    def get_trace(self, session_id: str, lap_number: int) -> dict[str, Any]:
+        if lap_number <= 0:
+            raise ValueError("lap_number must be greater than 0")
+        response = self._request(
+            method="GET", path=f"{self._session_path(session_id)}/laps/{lap_number}/trace",
+        )
+        if not isinstance(response, dict) or not isinstance(response.get("samples"), list):
+            raise RaceEngineerAPIError("API returned an invalid driving trace")
+        return response
+
+    def analyze_session(self, session_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+        return self._request(
+            method="POST", path=f"{self._session_path(session_id)}/analyze", payload=payload,
+        )
+
     def get_analysis(
         self,
         analysis_id: str,

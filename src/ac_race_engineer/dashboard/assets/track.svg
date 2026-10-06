@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="380" viewBox="0 0 900 380" role="img" aria-label="Esquema ilustrativo de circuito, sin correspondencia con un trazado real">
+<rect width="900" height="380" rx="24" fill="#eaf0f5"/>
+<g stroke="#dae3eb" stroke-width="1"><path d="M0 80H900M0 160H900M0 240H900M0 320H900M100 0V380M200 0V380M300 0V380M400 0V380M500 0V380M600 0V380M700 0V380M800 0V380"/></g>
+<path d="M225 283H576Q643 284 640 234L622 211Q605 185 641 166L702 144Q741 116 713 81Q690 62 657 79L583 118Q557 130 533 112L480 77Q448 58 418 88L396 117Q382 142 350 130L289 104Q247 86 214 120L175 169Q150 203 181 225L208 240Q226 252 225 283Z" fill="none" stroke="#c1d1df" stroke-width="35" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M225 283H576Q643 284 640 234L622 211Q605 185 641 166L702 144Q741 116 713 81Q690 62 657 79L583 118Q557 130 533 112L480 77Q448 58 418 88L396 117Q382 142 350 130L289 104Q247 86 214 120L175 169Q150 203 181 225L208 240Q226 252 225 283Z" fill="none" stroke="#17283b" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M260 283H520" stroke="#b92335" stroke-width="19"/>
+<path d="M288 269V296M295 269V296M302 269V296" stroke="#fff" stroke-width="4"/>
+<path d="M399 280L415 283 399 287" fill="none" stroke="#fff" stroke-width="3"/>
+<circle cx="674" cy="100" r="7" fill="#2563eb"/><circle cx="235" cy="137" r="7" fill="#2563eb"/>
+</svg>

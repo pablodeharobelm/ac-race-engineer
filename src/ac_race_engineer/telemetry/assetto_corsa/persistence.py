@@ -76,11 +76,13 @@ class AssettoCorsaPersistenceService:
         trace_store: (
             LapTraceParquetStore | None
         ) = None,
+        commit_on_drain: bool = False,
         trace_directory: str | Path = (
             "data/silver/lap_traces"
         ),
     ) -> None:
         self._session = session
+        self._commit_on_drain = commit_on_drain
 
         self.car_repository = (
             CarRepository(
@@ -456,6 +458,11 @@ class AssettoCorsaPersistenceService:
             )
 
             traces_saved += 1
+
+        if self._commit_on_drain and any(
+            (sessions_saved, laps_saved, sectors_saved, traces_saved)
+        ):
+            self._session.commit()
 
         return PersistenceDrainResult(
             sessions_saved=(

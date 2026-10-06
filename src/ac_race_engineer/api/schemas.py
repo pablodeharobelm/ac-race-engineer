@@ -22,6 +22,7 @@ class HealthResponse(BaseModel):
 class DrivingTraceSampleRequest(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
+        allow_inf_nan=False,
     )
 
     progress: float = Field(
@@ -48,6 +49,8 @@ class DrivingTraceSampleRequest(BaseModel):
     )
 
     steering_angle_deg: float
+    gear: int | None = Field(default=None, ge=-1, le=10, strict=True)
+    clutch: float | None = Field(default=None, ge=0.0, le=1.0)
 
     def to_domain(
         self,
@@ -63,6 +66,8 @@ class DrivingTraceSampleRequest(BaseModel):
             steering_angle_deg=(
                 self.steering_angle_deg
             ),
+            gear=self.gear,
+            clutch=self.clutch,
         )
 
 

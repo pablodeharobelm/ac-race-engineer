@@ -390,3 +390,60 @@ def test_capture_runner_rejects_negative_interval(
             samples=1,
             interval_seconds=-1.0,
         )
+
+@pytest.mark.parametrize("interval", [float("nan"), float("inf"), -float("inf")])
+def test_capture_rejects_non_finite_interval(database_session, tmp_path, interval):
+    runner = AssettoCorsaCaptureRunner(
+        source=AssettoCorsaSource(FakeAssettoCorsaBackend()),
+        persistence=AssettoCorsaPersistenceService(
+            database_session, trace_directory=tmp_path,
+        ),
+    )
+    with pytest.raises(ValueError, match="finite"):
+        runner.run(samples=1, interval_seconds=interval)
+
+
+@pytest.mark.parametrize("failure", ["interrupt", "read_error"])
+def test_capture_shutdown_on_interruption_and_read_error(database_session, tmp_path, failure):
+    from ac_race_engineer.telemetry.assetto_corsa.exceptions import AssettoCorsaReadError
+
+    error = KeyboardInterrupt if failure == "interrupt" else AssettoCorsaReadError
+    source = AssettoCorsaSource(FakeAssettoCorsaBackend())
+
+    def interrupt(_):
+        raise error("capture stopped")
+
+    runner = AssettoCorsaCaptureRunner(
+        source=source,
+        persistence=AssettoCorsaPersistenceService(
+            database_session, trace_directory=tmp_path, commit_on_drain=True,
+        ),
+        sleep=interrupt,
+    )
+    with pytest.raises(error):
+        runner.run(samples=3)
+    assert runner.statistics.frames_read == 1
+    assert runner.statistics.sessions_saved == 1
+    # Rollback must not erase the checkpoint saved before propagating the error.
+    database_session.rollback()
+    assert database_session.get(SessionRecord, source.last_completed_session.session_id) is not None
+    assert runner.finish() == (0, 0, 0, 0)
+    assert runner.statistics.sessions_saved == 1
+
+
+def test_completed_lap_is_committed_before_capture_ends(database_session, tmp_path):
+    source = AssettoCorsaSource(TraceBackend(), stale_timeout_seconds=None)
+    runner = AssettoCorsaCaptureRunner(
+        source=source,
+        persistence=AssettoCorsaPersistenceService(
+            database_session, trace_directory=tmp_path, commit_on_drain=True,
+        ),
+    )
+
+    def check_checkpoint(frame):
+        if runner.statistics.traces_saved:
+            database_session.rollback()
+            assert database_session.query(LapTraceRecord).count() == 1
+
+    result = runner.run(samples=4, interval_seconds=0, on_frame=check_checkpoint)
+    assert result.traces_saved == 1

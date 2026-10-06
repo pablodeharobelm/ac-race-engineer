@@ -172,6 +172,8 @@ class LapTraceParquetStore:
                 "throttle": (
                     sample.throttle
                 ),
+                "gear": sample.gear,
+                "clutch": sample.clutch,
                 "brake": (
                     sample.brake
                 ),
@@ -277,6 +279,15 @@ class LapTraceParquetStore:
             lap_number=lap_number,
         )
 
+        trace = self.read_file(input_file)
+        if trace.session_id != session_id or trace.lap_number != lap_number:
+            raise ValueError("LapTrace Parquet does not match the requested session and lap")
+        return trace
+
+    @classmethod
+    def read_file(cls, input_file: Path) -> LapTrace:
+        """Read a cataloged file, including files in a custom capture directory."""
+
         if not input_file.exists():
             raise FileNotFoundError(
                 input_file
@@ -289,7 +300,7 @@ class LapTraceParquetStore:
         table = parquet_file.read()
 
         missing_columns = (
-            self.REQUIRED_COLUMNS
+            cls.REQUIRED_COLUMNS
             - set(
                 table.column_names
             )
@@ -396,6 +407,8 @@ class LapTraceParquetStore:
 
         samples = tuple(
             DrivingTraceSample(
+                gear=row.get("gear"),
+                clutch=row.get("clutch"),
                 progress=float(
                     row["progress"]
                 ),

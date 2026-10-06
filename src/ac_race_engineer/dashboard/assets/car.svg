@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="380" viewBox="0 0 900 380" role="img" aria-label="Ilustración provisional de un coche de circuito">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#17283b"/><stop offset="1" stop-color="#304f6d"/></linearGradient><linearGradient id="paint" x2="0" y2="1"><stop stop-color="#f04c59"/><stop offset="1" stop-color="#a51129"/></linearGradient></defs>
+<rect width="900" height="380" rx="24" fill="url(#bg)"/>
+<path d="M0 295H900M0 320H900" stroke="#a5c0d7" stroke-opacity=".15"/>
+<path d="M60 105H350M60 125H230" stroke="#a5c0d7" stroke-opacity=".15" stroke-width="3"/>
+<ellipse cx="470" cy="300" rx="330" ry="20" fill="#061321" opacity=".65"/>
+<path d="M148 247L181 216 328 197 410 135Q435 123 478 129L580 144 650 200 738 216 775 249 767 280H147Z" fill="url(#paint)"/>
+<path d="M350 197L422 146 474 144 475 194Z" fill="#aecddd"/><path d="M489 146L564 159 613 198 489 194Z" fill="#aecddd"/>
+<path d="M160 250H746M321 209L609 213M483 204V272" fill="none" stroke="#7c1323" stroke-width="3"/>
+<path d="M168 226L217 221 208 239H158Z" fill="#fff1c5"/><path d="M722 226L754 237 764 252H727Z" fill="#fff1c5"/>
+<circle cx="282" cy="275" r="53" fill="#091321"/><circle cx="282" cy="275" r="32" fill="#d0dde5"/><circle cx="282" cy="275" r="18" fill="#40536a"/>
+<circle cx="660" cy="275" r="53" fill="#091321"/><circle cx="660" cy="275" r="32" fill="#d0dde5"/><circle cx="660" cy="275" r="18" fill="#40536a"/>
+<rect x="528" y="222" width="57" height="43" rx="5" fill="#f9fafb"/><text x="556" y="252" font-family="sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#17283b">01</text>
+<path d="M692 188V214M677 188H748" stroke="#101e2d" stroke-width="9"/>
+</svg>
